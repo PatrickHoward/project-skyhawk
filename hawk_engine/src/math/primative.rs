@@ -32,3 +32,17 @@ where
     position: Vec3<T>,
     size: Vec3<T>,
 }
+
+// pub struct Triangle2D<T>
+// where
+//     T: std::clone::Clone,
+// {
+//
+// }
+//
+// pub struct Pyramid3D<T>
+// where
+//     T: std::clone::Clone,
+// {
+//
+// }

@@ -1,8 +1,6 @@
 pub mod math;
 pub mod renderer;
 
-use gl::types::*;
-
 use math::Vec3f32;
 
 use renderer::{
@@ -11,7 +9,7 @@ use renderer::{
     vertex::{AsGLVert, GLVert, Vertex},
 };
 
-use std::{ffi::CString, rc::Rc};
+use std::{ffi::CString};
 
 pub fn start() {
     let points: [Vec3f32; 3] = [
@@ -42,7 +40,7 @@ pub fn start() {
 
     let _gl_context = open_gl::make_context(&window);
 
-    let gl =
+    let _gl =
         gl::load_with(|s| video_subsystem.gl_get_proc_address(s) as *const std::os::raw::c_void);
 
     let vert_shader =
@@ -59,54 +57,21 @@ pub fn start() {
 
     let clear_color = Color::white().as_tuple();
 
-    let mut vbo: gl::types::GLuint = 0;
-    unsafe {
-        gl::GenBuffers(1, &mut vbo);
-    }
+    let vbo = open_gl::ArrayBuffer::new();
 
-    unsafe {
-        gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
-        gl::BufferData(
-            gl::ARRAY_BUFFER,
-            (verts.len() * std::mem::size_of::<GLVert>()) as usize as gl::types::GLsizeiptr,
-            verts.as_ptr() as *const gl::types::GLvoid,
-            gl::STATIC_DRAW,
-        );
-        gl::BindBuffer(gl::ARRAY_BUFFER, 0);
-    }
+    vbo.bind();
+    vbo.static_draw(&verts);
+    vbo.unbind();
 
-    let mut vao: gl::types::GLuint = 0;
-    unsafe {
-        gl::GenVertexArrays(1, &mut vao);
-    }
+    let vao = open_gl::VertexArray::new();
 
-    unsafe {
-        gl::BindVertexArray(vao);
-        gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
+    vao.bind();
+    vbo.bind();
 
-        gl::EnableVertexAttribArray(0);
-        gl::VertexAttribPointer(
-            0,                                                 // Attribute location
-            3,                                                 // Quantity of floats
-            gl::FLOAT,                                         // Data type
-            gl::FALSE,                                         // If it is normalized
-            std::mem::size_of::<GLVert>() as gl::types::GLint, // Stride (Consecutive byte offset)
-            std::ptr::null(),                                  // Offset at first component
-        );
+    GLVert::vertex_attr_pointer();
 
-        gl::EnableVertexAttribArray(1);
-        gl::VertexAttribPointer(
-            1,
-            3,
-            gl::FLOAT,
-            gl::FALSE,
-            std::mem::size_of::<GLVert>() as gl::types::GLint,
-            (std::mem::size_of::<GLVert>() / 2) as *const gl::types::GLvoid,
-        );
-
-        gl::BindBuffer(gl::ARRAY_BUFFER, 0);
-        gl::BindVertexArray(0);
-    }
+    vbo.unbind();
+    vao.unbind();
 
     unsafe {
         gl::Viewport(0, 0, 800, 600);
@@ -129,9 +94,10 @@ pub fn start() {
         unsafe { gl::Clear(gl::COLOR_BUFFER_BIT) };
 
         shader_program.use_program();
+        vao.bind();
+
         unsafe {
-            gl::BindVertexArray(vao);
-            gl::DrawArrays(gl::TRIANGLES, 0, 3);
+            gl::DrawArrays(gl::TRIANGLES, 1, 4);
         }
 
         window.gl_swap_window();

@@ -1,7 +1,7 @@
 use std::ops::{Add, Mul, Sub};
 
 #[derive(Copy, Clone, Debug)]
-#[repr(C, packed)]
+#[repr(C)]
 pub struct Vec2<T>
 where
     T: std::clone::Clone,
@@ -47,7 +47,7 @@ impl Mul for Vec2<f32> {
 }
 
 #[derive(Copy, Clone, Debug)]
-#[repr(C, packed)]
+#[repr(C)]
 pub struct Vec3<T>
 where
     T: std::clone::Clone,
@@ -103,7 +103,7 @@ impl From<(f32, f32, f32)> for Vec3<f32> {
 }
 
 #[derive(Copy, Clone, Debug)]
-#[repr(C, packed)]
+#[repr(C)]
 pub struct Vec4<T> {
     pub x: T,
     pub y: T,

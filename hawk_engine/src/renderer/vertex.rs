@@ -1,5 +1,11 @@
-use crate::math::Vec3f32;
-use crate::renderer::color::Color;
+use crate::{
+    math::Vec3f32,
+    renderer::color::Color
+};
+
+use gl;
+
+use std::mem;
 
 pub struct Vertex {
     point: Vec3f32,
@@ -20,11 +26,44 @@ impl Vertex {
     }
 }
 
+type X3f32Tuple = (f32, f32, f32);
+
 #[derive(Copy, Clone, Debug)]
 #[repr(C, packed)]
 pub struct GLVert {
-    point: (f32, f32, f32),
-    color: (f32, f32, f32),
+    point: X3f32Tuple,
+    color: X3f32Tuple,
+}
+
+impl GLVert {
+    pub fn vertex_attr_pointer() {
+        let stride = mem::size_of::<Self>();
+        let mut location = 0;
+        let mut offset = 0;
+
+        unsafe {
+            Self::vertex_attrib_ptr(location, stride, offset)
+        }
+
+        location = 1;
+        offset = offset + mem::size_of::<X3f32Tuple>();
+
+        unsafe {
+            Self::vertex_attrib_ptr(location, stride, offset)
+        }
+    }
+
+    unsafe fn vertex_attrib_ptr(location: i32, stride: usize, offset: usize) {
+        gl::EnableVertexAttribArray(location as gl::types::GLuint);
+        gl::VertexAttribPointer(
+            location as gl::types::GLuint,
+            3,
+            gl::FLOAT,
+            gl::FALSE,
+            stride as gl::types::GLint,
+            offset as *const gl::types::GLvoid
+        );
+    }
 }
 
 pub trait AsGLVert {
