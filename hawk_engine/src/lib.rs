@@ -10,15 +10,25 @@ use renderer::{
 };
 
 use std::{ffi::CString};
+use std::ptr::null;
+use sdl2::keyboard::Scancode;
 
 pub fn start() {
-    let points: [Vec3f32; 3] = [
-        Vec3f32::new(-0.5f32, -0.5f32, 0.0f32),
-        Vec3f32::new(0.5f32, -0.5f32, 0.0f32),
-        Vec3f32::new(0.0f32, 0.5f32, 0.0f32),
+    let points: [Vec3f32; 4] = [
+        Vec3f32::new(0.5, 0.5, 0.0),
+        Vec3f32::new(0.5, -0.5, 0.0),
+        Vec3f32::new(-0.5, -0.5, 0.0),
+        Vec3f32::new(-0.5, 0.5, 0.0),
     ];
 
-    let colors: [Color; 3] = [Color::green(), Color::blue(), Color::green()];
+    let colors: [Color; 4] = [
+        Color::blue(), Color::green(), Color::blue(), Color::green(),
+    ];
+
+    let indices: [u32; 6] = [
+        0, 1, 3,
+        1, 2, 3,
+    ];
 
     let mut verts: Vec<GLVert> = vec![];
     for i in 0..points.len() {
@@ -34,6 +44,7 @@ pub fn start() {
 
     let window = video_subsystem
         .window("Hello GL", 800, 600)
+        .allow_highdpi()
         .opengl()
         .build()
         .unwrap();
@@ -44,7 +55,8 @@ pub fn start() {
         gl::load_with(|s| video_subsystem.gl_get_proc_address(s) as *const std::os::raw::c_void);
 
     let vert_shader =
-        renderer::shader::VertexShader::new(&CString::new(include_str!("triangle.vert")).unwrap())
+        renderer::shader::VertexShader::new(
+            &CString::new(include_str!("triangle.vert")).unwrap())
             .expect("Failed to create vertex shader");
 
     let frag_shader = renderer::shader::FragmentShader::new(
@@ -52,20 +64,25 @@ pub fn start() {
     )
     .expect("Failed to create fragment shader");
 
-    let shader_program = renderer::shader::GLShaderProgram::new(frag_shader, vert_shader)
+    let shader_program =
+        renderer::shader::GLShaderProgram::new(frag_shader, vert_shader)
         .expect("Failed to create Shader program");
 
     let clear_color = Color::white().as_tuple();
 
+    let ebo = open_gl::ElementBuffer::new();
     let vbo = open_gl::ArrayBuffer::new();
-
-    vbo.bind();
-    vbo.static_draw(&verts);
-    vbo.unbind();
-
     let vao = open_gl::VertexArray::new();
 
     vao.bind();
+
+    vbo.bind();
+    vbo.buffer_data(&verts);
+    vbo.unbind();
+
+    ebo.bind();
+    ebo.buffer_data(&indices);
+
     vbo.bind();
 
     GLVert::vertex_attr_pointer();
@@ -78,15 +95,29 @@ pub fn start() {
         gl::ClearColor(clear_color.0, clear_color.1, clear_color.2, clear_color.3);
     }
 
+    let mut wireframe_enable = false;
+
     let mut ev_pump = sdl.event_pump().unwrap();
     'main: loop {
         for ev in ev_pump.poll_iter() {
             match ev {
                 sdl2::event::Event::Quit { .. } => break 'main,
                 sdl2::event::Event::KeyDown {
-                    scancode: Some(sdl2::keyboard::Scancode::Escape),
+                    scancode: Some(key),
                     ..
-                } => break 'main,
+                } => match key {
+                    sdl2::keyboard::Scancode::Escape => break 'main,
+                    sdl2::keyboard::Scancode::Space => unsafe {
+                        if !wireframe_enable {
+                            gl::PolygonMode(gl::FRONT_AND_BACK, gl::LINE);
+                            wireframe_enable = true;
+                        } else {
+                            gl::PolygonMode(gl::FRONT_AND_BACK, gl::FILL);
+                            wireframe_enable = false;
+                        }
+                   },
+                    _ => {}
+                }
                 _ => {}
             }
         }
@@ -94,10 +125,12 @@ pub fn start() {
         unsafe { gl::Clear(gl::COLOR_BUFFER_BIT) };
 
         shader_program.use_program();
+
         vao.bind();
+        ebo.bind();
 
         unsafe {
-            gl::DrawArrays(gl::TRIANGLES, 1, 4);
+            gl::DrawElements(gl::TRIANGLES, 6, gl::UNSIGNED_INT, 0 as *const gl::types::GLvoid);
         }
 
         window.gl_swap_window();

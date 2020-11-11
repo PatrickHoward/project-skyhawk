@@ -27,20 +27,20 @@ impl ArrayBuffer {
     pub fn bind(&self) {
         unsafe { gl::BindBuffer(gl::ARRAY_BUFFER, self.vbo); }
     }
+    pub fn unbind(&self) {
+        unsafe { gl::BindBuffer(gl::ARRAY_BUFFER, 0); }
+    }
 
     // This does borrow self for simple organization reasons
-    pub fn static_draw(&self, verts: &Vec<GLVert>) {
+    pub fn buffer_data<T>(&self, data: &[T]) {
         unsafe { gl::BufferData(
                 gl::ARRAY_BUFFER,
-                (verts.len() * std::mem::size_of::<GLVert>()) as usize as gl::types::GLsizeiptr,
-                verts.as_ptr() as *const gl::types::GLvoid,
+                (data.len() * std::mem::size_of::<T>()) as usize as gl::types::GLsizeiptr,
+                data.as_ptr() as *const gl::types::GLvoid,
                 gl::STATIC_DRAW);
         }
     }
 
-    pub fn unbind(&self) {
-        unsafe { gl::BindBuffer(gl::ARRAY_BUFFER, 0); }
-    }
 }
 
 impl Drop for ArrayBuffer {
@@ -49,7 +49,40 @@ impl Drop for ArrayBuffer {
     }
 }
 
-pub struct VertexArray {
+pub(crate) struct ElementBuffer {
+    ebo: gl::types::GLuint,
+}
+
+impl ElementBuffer {
+    pub fn new() -> Self {
+        let mut ebo: gl::types::GLuint = 0;
+        unsafe { gl::GenBuffers(1, &mut ebo); }
+
+        ElementBuffer { ebo }
+    }
+
+    pub fn bind(&self) { unsafe { gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, self.ebo); } }
+    pub fn unbind(&self) { unsafe { gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, 0); } }
+
+    pub fn buffer_data<T>(&self, data: &[T]) {
+        unsafe {
+            gl::BufferData(
+                gl::ELEMENT_ARRAY_BUFFER,
+                (data.len() * std::mem::size_of::<T>()) as usize as gl::types::GLsizeiptr,
+                data.as_ptr() as *const gl::types::GLvoid,
+                gl::STATIC_DRAW,
+            );
+        }
+    }
+}
+
+impl Drop for ElementBuffer {
+    fn drop(&mut self) {
+        unsafe { gl::DeleteBuffers(1, &mut self.ebo )}
+    }
+}
+
+pub(crate) struct VertexArray {
     vao: gl::types::GLuint,
 }
 
@@ -64,7 +97,6 @@ impl VertexArray {
     pub fn bind(&self) {
         unsafe { gl::BindVertexArray(self.vao); }
     }
-
     pub fn unbind(&self) {
         unsafe { gl::BindVertexArray(0); }
     }
