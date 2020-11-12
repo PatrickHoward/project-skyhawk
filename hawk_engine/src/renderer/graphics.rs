@@ -1,7 +1,7 @@
 use std::{
-    fs::File,
     path::Path
 };
+
 use crate::math::Vec2f32;
 
 pub(crate) struct ImageRGB {
@@ -11,8 +11,8 @@ pub(crate) struct ImageRGB {
 }
 
 impl ImageRGB {
-    pub fn new() -> Self {
-        let img = image::open(&Path::new("container.jpg")).unwrap().into_rgb();
+    pub fn new(path: &Path) -> Self {
+        let img = image::open(path).unwrap().into_rgb();
 
         let height = img.height();
         let width = img.width();

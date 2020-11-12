@@ -1,4 +1,4 @@
-use crate::math::vector::{Vec2, Vec3, Vec4};
+use crate::math::vector::{Vec2};
 
 pub struct Rect2D<T>
 where
@@ -25,13 +25,13 @@ where
     }
 }
 
-pub struct Cube3D<T>
-where
-    T: std::clone::Clone,
-{
-    position: Vec3<T>,
-    size: Vec3<T>,
-}
+// pub struct Cube3D<T>
+// where
+//     T: std::clone::Clone,
+// {
+//     position: Vec3<T>,
+//     size: Vec3<T>,
+// }
 
 // pub struct Triangle2D<T>
 // where

@@ -1,10 +1,10 @@
-use std::ops::{Add, Mul, Sub};
+use std::{ops::{Add, Mul}, clone::Clone};
 
 #[derive(Copy, Clone, Debug)]
 #[repr(C)]
 pub struct Vec2<T>
 where
-    T: std::clone::Clone,
+    T: Clone,
 {
     pub x: T,
     pub y: T,
@@ -12,20 +12,43 @@ where
 
 impl<T> Vec2<T>
 where
-    T: std::clone::Clone,
+    T: Clone + Mul<Output = T> + Add<Output = T>
 {
-    pub fn new(x: T, y: T) -> Vec2<T> {
-        Vec2 { x, y }
+    pub fn new(x: T, y: T) -> Self {
+        Self { x, y }
     }
 
-    pub fn as_tuple(&self) -> (T, T) { (self.x.clone(), self.y.clone()) }
+    pub fn into_tuple(self) -> (T, T) { (self.x, self.y) }
+
+    pub fn dot(self, rhs: Self) -> T {
+        self.x * rhs.x +
+        self.y * rhs.y
+    }
+
+    pub fn cross(self, _rhs: Self) -> Self {
+        unimplemented!();
+    }
+
+    pub fn mul_scalar(self, scalar: T) -> Self {
+        Self { x: self.x * scalar.clone(), y: self.y * scalar}
+    }
+
+}
+
+impl<T> Add for Vec2<T>
+where T: Clone + Add<Output=T>
+{
+    type Output = Self;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        Self::Output { x: self.x + rhs.x, y: self.y + rhs.y}
+    }
 }
 
 impl Vec2<f32> {
     pub fn unit() -> Self {
         Vec2::<f32>::new(1.0f32, 1.0f32)
     }
-
     pub fn zero() -> Self {
         Vec2::<f32>::new(0.0f32, 0.0f32)
     }
@@ -34,17 +57,6 @@ impl Vec2<f32> {
 impl From<(f32, f32)> for Vec2<f32> {
     fn from(data: (f32, f32)) -> Self {
         Vec2::<f32>::new(data.0, data.1)
-    }
-}
-
-impl Mul for Vec2<f32> {
-    type Output = Vec2<f32>;
-
-    fn mul(self, rhs: Self) -> Self::Output {
-        let x = self.x * rhs.x;
-        let y = self.y * rhs.y;
-
-        Vec2::<f32>::new(x, y)
     }
 }
 
@@ -59,31 +71,44 @@ where
     pub z: T,
 }
 
-// Todo: Make conversion traits for mapping colors to Vec3f32
-// pub trait AsVec3<T> {
-//     fn as_vec(self) -> Vec3<T>;
-// }
-
 impl<T> Vec3<T>
 where
-    T: std::clone::Clone,
+    T: Clone + Mul<Output = T> + Add<Output = T>
 {
     pub fn new(x: T, y: T, z: T) -> Vec3<T> {
         Vec3 { x, y, z }
     }
 
     pub fn from_value(v: T) -> Vec3<T> {
-        let value = v;
-
         Vec3 {
-            x: value.clone(),
-            y: value.clone(),
-            z: value.clone(),
+            x: v.clone(),
+            y: v.clone(),
+            z: v,
         }
     }
 
-    pub fn as_tuple(&self) -> (T, T, T) {
-        (self.x.clone(), self.y.clone(), self.z.clone())
+    pub fn dot(self, rhs: Self) -> T {
+        self.x * rhs.x + self.y * rhs.y + self.z * rhs.z
+    }
+
+    pub fn cross(self, _rhs: Self) -> Self {
+        unimplemented!();
+    }
+
+    pub fn mul_scalar(self, scalar: T) -> Self {
+        Self { x: self.x * scalar.clone(), y: self.y * scalar.clone(), z: self.z * scalar}
+    }
+
+    pub fn into_tuple(self) -> (T, T, T) {(self.x, self.y, self.z)}
+}
+
+impl<T> Add for Vec3<T>
+    where T: Clone + Add<Output=T>
+{
+    type Output = Self;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        Self::Output { x: self.x + rhs.x, y: self.y + rhs.y, z: self.z + rhs.z}
     }
 }
 
@@ -91,7 +116,6 @@ impl Vec3<f32> {
     pub fn unit() -> Self {
         Vec3::<f32>::new(1.0f32, 1.0f32, 1.0f32)
     }
-
     pub fn zero() -> Self { Vec3::<f32>::new(0.0f32, 0.0f32, 0.0f32) }
 }
 
@@ -111,31 +135,50 @@ pub struct Vec4<T> {
 }
 
 impl<T> Vec4<T>
-where T: std::clone::Clone {
-    pub fn new(x: T, y: T, z: T, w: T) -> Vec4<T> {
-        Vec4 { x, y, z, w }
+where T: Clone + Mul<Output = T> + Add<Output = T> {
+    pub fn new(x: T, y: T, z: T, w: T) -> Self {
+        Self { x, y, z, w }
     }
 
-    pub fn from_value(v: T) -> Vec4<T> {
-        let value = v;
-
-        Vec4 {
-            x: value.clone(),
-            y: value.clone(),
-            z: value.clone(),
-            w: value.clone(),
+    pub fn from_value(v: T) -> Self {
+        Self {
+            x: v.clone(),
+            y: v.clone(),
+            z: v.clone(),
+            w: v,
         }
+    }
+
+    pub fn dot(self, rhs: Self) -> T {
+        self.x * rhs.x + self.y * rhs.y + self.z * rhs.z + self.w * rhs.w
+    }
+
+    pub fn cross(self, _rhs: Self) -> Self {
+        unimplemented!();
+    }
+
+    pub fn mul_scalar(self, scalar: T) -> Self {
+        Self { x: self.x * scalar.clone(), y: self.y * scalar.clone(), z: self.z * scalar.clone(), w: self.w * scalar}
+    }
+
+    pub fn into_tuple(self) -> (T, T, T, T) {
+        (self.x, self.y, self.z, self.w)
+    }
+}
+
+impl<T> Add for Vec4<T>
+    where T: Clone + Add<Output=T>
+{
+    type Output = Self;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        Self::Output { x: self.x + rhs.x, y: self.y + rhs.y, z: self.z + rhs.z, w: self.w + rhs.w }
     }
 }
 
 impl Vec4<f32> {
-    pub fn unit() -> Self {
-        Vec4::<f32>::new(1.0f32, 1.0f32, 1.0f32, 0.0f32)
-    }
-
-    pub fn zero() -> Self {
-        Vec4::<f32>::new(0.0f32, 0.0f32, 0.0f32, 0.0f32)
-    }
+    pub fn unit() -> Self { Vec4::<f32>::from_value(1.0f32) }
+    pub fn zero() -> Self { Vec4::<f32>::from_value(0.0f32) }
 }
 
 impl From<(f32, f32, f32, f32)> for Vec4<f32> {

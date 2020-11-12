@@ -6,6 +6,9 @@ use crate::{
 use gl;
 use std::mem;
 
+/// # Vertex
+/// Higher level concept of a vertex, should be converted into the appropriate data type
+/// upon rendering.
 pub struct Vertex {
     point: Vec3f32,
     color: Color,
@@ -31,6 +34,9 @@ impl Vertex {
 type X3f32Tuple = (f32, f32, f32);
 type X2f32Tuple = (f32, f32);
 
+/// # GLVert
+/// Struct for providing packed vertex data to OpenGL's shaders, should only be used with
+/// renderer::vertex::Vertex converted to a GlVert when piping data to OpenGL.
 #[derive(Copy, Clone, Debug)]
 #[repr(C, packed)]
 pub struct GLVert {
@@ -84,9 +90,9 @@ pub trait AsGLVert {
 impl AsGLVert for Vertex {
     fn as_glvert(&self) -> GLVert {
         GLVert {
-            point: self.point.as_tuple(),
-            color: self.color.color().as_tuple(),
-            texcord: self.texcord.as_tuple(),
+            point: self.point.into_tuple(),
+            color: self.color.color().into_tuple(),
+            texcord: self.texcord.into_tuple(),
         }
     }
 }

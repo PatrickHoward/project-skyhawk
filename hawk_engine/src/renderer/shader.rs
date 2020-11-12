@@ -24,7 +24,7 @@ fn make_shader_internal(src: &CStr, kind: GLuint) -> Result<GLuint, String> {
             gl::GetShaderiv(id, gl::INFO_LOG_LENGTH, &mut len);
         }
 
-        let mut error = make_whitespace_cstring_with_len(len as usize);
+        let error = make_whitespace_cstring_with_len(len as usize);
 
         unsafe {
             gl::GetShaderInfoLog(id, len, std::ptr::null_mut(), error.as_ptr() as *mut GLchar)
