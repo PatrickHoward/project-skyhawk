@@ -1,4 +1,4 @@
-use std::{ops::{Add, Mul}, clone::Clone};
+use std::{ops::{Add, Sub, Mul, Neg}, clone::Clone};
 
 #[derive(Copy, Clone, Debug)]
 #[repr(C)]
@@ -36,12 +36,34 @@ where
 }
 
 impl<T> Add for Vec2<T>
-where T: Clone + Add<Output=T>
+where
+    T: Clone + Add<Output = T>
 {
     type Output = Self;
 
     fn add(self, rhs: Self) -> Self::Output {
         Self::Output { x: self.x + rhs.x, y: self.y + rhs.y}
+    }
+}
+
+impl<T> Sub for Vec2<T>
+where
+    T: Clone + Sub<Output = T>
+{
+    type Output = Self;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        Self::Output { x : self.x - rhs.x, y: self.y - rhs.y }
+    }
+}
+
+impl<T> Neg for Vec2<T>
+where T: Clone + Neg<Output = T>
+{
+    type Output = Self;
+
+    fn neg(self) -> Self::Output {
+        Self::Output { x: - self.x, y: - self.y }
     }
 }
 
@@ -91,8 +113,12 @@ where
         self.x * rhs.x + self.y * rhs.y + self.z * rhs.z
     }
 
-    pub fn cross(self, _rhs: Self) -> Self {
-        unimplemented!();
+    pub fn cross(self, rhs: Self) -> Self {
+        Vec3 {
+            x: self.y.clone() * rhs.z.clone() - self.z.clone() * rhs.y.clone(),
+            y: self.z * rhs.x.clone() - self.x.clone() * rhs.z,
+            z: self.x * rhs.y - self.y * rhs.x,
+        }
     }
 
     pub fn mul_scalar(self, scalar: T) -> Self {
@@ -109,6 +135,27 @@ impl<T> Add for Vec3<T>
 
     fn add(self, rhs: Self) -> Self::Output {
         Self::Output { x: self.x + rhs.x, y: self.y + rhs.y, z: self.z + rhs.z}
+    }
+}
+
+impl<T> Sub for Vec3<T>
+where
+    T: Clone + Sub<Output = T>
+{
+    type Output = Self;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        Self::Output { x : self.x - rhs.x, y: self.y - rhs.y, z: self.z - rhs.z }
+    }
+}
+
+impl<T> Neg for Vec3<T>
+    where T: Clone + Neg<Output = T>
+{
+    type Output = Self;
+
+    fn neg(self) -> Self::Output {
+        Self::Output { x: - self.x, y: - self.y, z: - self.z }
     }
 }
 
@@ -153,10 +200,6 @@ where T: Clone + Mul<Output = T> + Add<Output = T> {
         self.x * rhs.x + self.y * rhs.y + self.z * rhs.z + self.w * rhs.w
     }
 
-    pub fn cross(self, _rhs: Self) -> Self {
-        unimplemented!();
-    }
-
     pub fn mul_scalar(self, scalar: T) -> Self {
         Self { x: self.x * scalar.clone(), y: self.y * scalar.clone(), z: self.z * scalar.clone(), w: self.w * scalar}
     }
@@ -173,6 +216,27 @@ impl<T> Add for Vec4<T>
 
     fn add(self, rhs: Self) -> Self::Output {
         Self::Output { x: self.x + rhs.x, y: self.y + rhs.y, z: self.z + rhs.z, w: self.w + rhs.w }
+    }
+}
+
+impl<T> Sub for Vec4<T>
+    where
+        T: Clone + Sub<Output = T>
+{
+    type Output = Self;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        Self::Output { x : self.x - rhs.x, y: self.y - rhs.y, z: self.z - rhs.z, w: self.w - rhs.w }
+    }
+}
+
+impl<T> Neg for Vec4<T>
+    where T: Clone + Neg<Output = T>
+{
+    type Output = Self;
+
+    fn neg(self) -> Self::Output {
+        Self::Output { x: - self.x, y: - self.y, z: - self.z, w: - self.w }
     }
 }
 
