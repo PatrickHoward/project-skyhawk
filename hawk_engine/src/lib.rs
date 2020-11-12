@@ -1,7 +1,7 @@
 pub mod math;
 pub mod renderer;
 
-use math::Vec3f32;
+use math::{Vec3f32, Vec2f32};
 
 use renderer::{
     color::Color,
@@ -9,8 +9,11 @@ use renderer::{
     vertex::{AsGLVert, GLVert, Vertex},
 };
 
-use std::{ffi::CString};
-use std::ptr::null;
+use std::{
+    ffi::CString,
+    ptr::null
+};
+
 use sdl2::keyboard::Scancode;
 
 pub fn start() {
@@ -25,6 +28,13 @@ pub fn start() {
         Color::blue(), Color::green(), Color::blue(), Color::green(),
     ];
 
+    let tex_cords: [Vec2f32; 4] = [
+        Vec2f32::new(1.0f32, 1.0f32),
+        Vec2f32::new(1.0f32, 0.0f32),
+        Vec2f32::new(0.0f32, 0.0f32),
+        Vec2f32::new(0.0f32, 1.0f32),
+    ];
+
     let indices: [u32; 6] = [
         0, 1, 3,
         1, 2, 3,
@@ -32,7 +42,7 @@ pub fn start() {
 
     let mut verts: Vec<GLVert> = vec![];
     for i in 0..points.len() {
-        verts.push(Vertex::new(points[i], colors[i]).as_glvert());
+        verts.push(Vertex::new(points[i], colors[i], tex_cords[i]).as_glvert());
     }
 
     let sdl = sdl2::init().expect("Failed to initialize SDL!");
@@ -53,6 +63,31 @@ pub fn start() {
 
     let _gl =
         gl::load_with(|s| video_subsystem.gl_get_proc_address(s) as *const std::os::raw::c_void);
+
+    let graphic = crate::renderer::graphics::ImageRGB::new();
+
+    let mut texture: u32 = 0;
+    unsafe {
+        gl::GenTextures(1, &mut texture);
+        gl::BindTexture(gl::TEXTURE_2D, texture);
+
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, gl::REPEAT as i32);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, gl::REPEAT as i32);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR as i32);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as i32);
+
+        gl::TexImage2D(gl::TEXTURE_2D,
+                       0,
+                       gl::RGB as i32,
+                       graphic.width() as i32,
+                       graphic.height() as i32,
+                       0,
+                       gl::RGB as u32,
+                       gl::UNSIGNED_BYTE,
+                       graphic.data().as_ptr() as  *const gl::types::GLvoid
+        );
+        gl::GenerateMipmap(gl::TEXTURE_2D);
+    }
 
     let vert_shader =
         renderer::shader::VertexShader::new(
@@ -125,6 +160,11 @@ pub fn start() {
         unsafe { gl::Clear(gl::COLOR_BUFFER_BIT) };
 
         shader_program.use_program();
+
+        unsafe {
+            
+            gl::BindTexture(gl::TEXTURE_2D, texture);
+        }
 
         vao.bind();
         ebo.bind();

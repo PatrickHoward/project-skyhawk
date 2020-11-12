@@ -17,6 +17,8 @@ where
     pub fn new(x: T, y: T) -> Vec2<T> {
         Vec2 { x, y }
     }
+
+    pub fn as_tuple(&self) -> (T, T) { (self.x.clone(), self.y.clone()) }
 }
 
 impl Vec2<f32> {
@@ -79,6 +81,10 @@ where
             z: value.clone(),
         }
     }
+
+    pub fn as_tuple(&self) -> (T, T, T) {
+        (self.x.clone(), self.y.clone(), self.z.clone())
+    }
 }
 
 impl Vec3<f32> {
@@ -86,14 +92,7 @@ impl Vec3<f32> {
         Vec3::<f32>::new(1.0f32, 1.0f32, 1.0f32)
     }
 
-    pub fn zero() -> Self {
-        Vec3::<f32>::new(0.0f32, 0.0f32, 0.0f32)
-    }
-
-    // Todo: Find a way to make this tuple generic for different numeral types
-    pub fn as_tuple(&self) -> (f32, f32, f32) {
-        (self.x, self.y, self.z)
-    }
+    pub fn zero() -> Self { Vec3::<f32>::new(0.0f32, 0.0f32, 0.0f32) }
 }
 
 impl From<(f32, f32, f32)> for Vec3<f32> {
@@ -111,21 +110,22 @@ pub struct Vec4<T> {
     pub w: T,
 }
 
-impl<T> Vec4<T> {
+impl<T> Vec4<T>
+where T: std::clone::Clone {
     pub fn new(x: T, y: T, z: T, w: T) -> Vec4<T> {
         Vec4 { x, y, z, w }
     }
 
-    // pub fn from_value(v: T) -> Vec4<T> {
-    //     let value = v;
-    //
-    //     Vec4 {
-    //         x: value.clone(),
-    //         y: value.clone(),
-    //         z: value.clone(),
-    //         w: value.clone(),
-    //     }
-    // }
+    pub fn from_value(v: T) -> Vec4<T> {
+        let value = v;
+
+        Vec4 {
+            x: value.clone(),
+            y: value.clone(),
+            z: value.clone(),
+            w: value.clone(),
+        }
+    }
 }
 
 impl Vec4<f32> {
