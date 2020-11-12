@@ -95,7 +95,7 @@ where
 
 impl<T> Vec3<T>
 where
-    T: Clone + Mul<Output = T> + Add<Output = T>
+    T: Clone + Mul<Output = T> + Add<Output = T> + Sub<Output = T>
 {
     pub fn new(x: T, y: T, z: T) -> Vec3<T> {
         Vec3 { x, y, z }
