@@ -57,7 +57,7 @@ impl GLVert {
         }
 
         location = 2;
-        offset = offset + mem::size_of::<X2f32Tuple>();
+        offset = offset + mem::size_of::<X3f32Tuple>();
 
         unsafe {
             Self::vertex_attrib_ptr(location, 2, stride, offset);

@@ -10,5 +10,5 @@ out vec4 Color;
 uniform sampler2D Textr;
 
 void main() {
-    Color = texture(Textr, IN.TexCord);
+    Color = texture(Textr, IN.TexCord) * vec4(IN.Color, 1.0);
 }

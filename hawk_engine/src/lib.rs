@@ -25,7 +25,7 @@ pub fn start() {
     ];
 
     let colors: [Color; 4] = [
-        Color::blue(), Color::green(), Color::blue(), Color::green(),
+        Color::white(), Color::white(), Color::white(), Color::white(),
     ];
 
     let tex_cords: [Vec2f32; 4] = [
