@@ -124,6 +124,17 @@ impl GLShaderProgram {
             gl::UseProgram(self.id);
         }
     }
+
+    pub fn id(&self) -> u32 {
+        self.id
+    }
+
+    pub fn set_i32(&self, attr: &str, value: i32) {
+        let uniform_name = CString::new(attr).unwrap();
+        unsafe {
+            gl::Uniform1i(gl::GetUniformLocation(self.id, uniform_name.as_ptr()), value);
+        }
+    }
 }
 
 impl Drop for GLShaderProgram {

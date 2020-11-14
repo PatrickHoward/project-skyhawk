@@ -1,5 +1,6 @@
 pub mod primitive;
 pub mod vector;
+pub mod matrix;
 
 use primitive::{Rect2D};
 use vector::{Vec2, Vec3, Vec4};

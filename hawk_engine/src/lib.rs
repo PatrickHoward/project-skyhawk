@@ -61,7 +61,8 @@ pub fn start() {
     let _gl =
         gl::load_with(|s| video_subsystem.gl_get_proc_address(s) as *const std::os::raw::c_void);
 
-    let texture = open_gl::GlTexture::new(std::path::Path::new("container.jpg"));
+    let box_texture = open_gl::GlTexture::new(std::path::Path::new("container.jpg"));
+    let ferris_texture = open_gl::GlTexture::new(std::path::Path::new("ferris.png"));
 
     let vert_shader =
         renderer::shader::VertexShader::new(
@@ -77,7 +78,7 @@ pub fn start() {
         renderer::shader::GLShaderProgram::new(frag_shader, vert_shader)
         .expect("Failed to create Shader program");
 
-    let clear_color = Color::white().as_tuple();
+    let clear_color = Color::black().as_tuple();
 
     let ebo = open_gl::ElementBuffer::new();
     let vbo = open_gl::ArrayBuffer::new();
@@ -132,10 +133,16 @@ pub fn start() {
         }
 
         unsafe { gl::Clear(gl::COLOR_BUFFER_BIT) };
-
         shader_program.use_program();
 
-        texture.bind();
+        shader_program.set_i32("texture_a", 0);
+        shader_program.set_i32("texture_b", 1);
+
+        unsafe { gl::ActiveTexture(gl::TEXTURE0); }
+        box_texture.bind();
+
+        unsafe { gl::ActiveTexture(gl::TEXTURE1); }
+        ferris_texture.bind();
 
         vao.bind();
         ebo.bind();

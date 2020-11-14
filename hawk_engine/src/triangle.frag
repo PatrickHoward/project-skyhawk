@@ -7,8 +7,9 @@ in VS_OUTPUT {
 
 out vec4 Color;
 
-uniform sampler2D Textr;
+uniform sampler2D texture_a;
+uniform sampler2D texture_b;
 
 void main() {
-    Color = texture(Textr, IN.TexCord) * vec4(IN.Color, 1.0);
+    Color = mix(texture(texture_a, IN.TexCord),  texture(texture_b, IN.TexCord), 0.5);
 }

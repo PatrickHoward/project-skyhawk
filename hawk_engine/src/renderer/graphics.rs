@@ -1,8 +1,6 @@
-use std::{
-    path::Path
-};
-
+use std::path::Path;
 use crate::math::Vec2f32;
+use image::imageops::flip_vertical;
 
 pub(crate) struct ImageRGB {
     width: u32,
@@ -12,7 +10,8 @@ pub(crate) struct ImageRGB {
 
 impl ImageRGB {
     pub fn new(path: &Path) -> Self {
-        let img = image::open(path).unwrap().into_rgb();
+        let mut img = image::open(path).unwrap().into_rgb();
+        let img = flip_vertical(&img);
 
         let height = img.height();
         let width = img.width();
@@ -31,6 +30,7 @@ impl ImageRGB {
 
     pub fn width(&self)  -> u32 { self.width  }
     pub fn height(&self) -> u32 { self.height }
+
     pub fn data(&self) -> &Vec<u8> { &self.data }
 }
 

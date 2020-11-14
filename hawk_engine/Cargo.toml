@@ -11,5 +11,8 @@ opt-level = 3
 
 [dependencies]
 gl = "*"
+glm = "*"
+
 sdl2 = "*"
+
 image = "*"
