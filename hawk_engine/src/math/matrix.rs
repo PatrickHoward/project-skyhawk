@@ -27,7 +27,7 @@ where
     }
 
     pub fn from_value(v: T) -> Self {
-
+        unimplemented!();
     }
 
     pub fn translate(&mut self, trans_vec: Vec3<T>) {
