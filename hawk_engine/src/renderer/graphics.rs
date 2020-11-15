@@ -10,7 +10,7 @@ pub(crate) struct ImageRGB {
 
 impl ImageRGB {
     pub fn new(path: &Path) -> Self {
-        let mut img = image::open(path).unwrap().into_rgb();
+        let img = image::open(path).unwrap().into_rgb();
         let img = flip_vertical(&img);
 
         let height = img.height();

@@ -3,7 +3,10 @@ pub mod vector;
 pub mod matrix;
 
 use primitive::{Rect2D};
+
 use vector::{Vec2, Vec3, Vec4};
+
+use matrix::{Mat4};
 
 // Aliased types for Vector structs
 pub type Vec2f32 = Vec2<f32>;
@@ -14,6 +17,10 @@ pub type Vec3i32 = Vec3<i32>;
 
 pub type Vec4f32 = Vec4<f32>;
 pub type Vec4i32 = Vec4<i32>;
+
+// Aliased types for Matrix structs
+pub type Mat4f32 = Mat4<f32>;
+pub type Mat4i32 = Mat4<i32>; // yagne?
 
 // Aliased types for "primitives"
 pub type Rect2Df32 = Rect2D<f32>;
