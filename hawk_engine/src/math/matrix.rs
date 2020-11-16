@@ -3,7 +3,6 @@ extern crate glm;
 use glm::{Matrix4, Vector4, Vector3};
 
 use crate::math::vector::{Vec4, Vec3};
-use std::borrow::Borrow;
 
 pub struct Mat4<T>
 where T: glm::BaseFloat
@@ -27,7 +26,14 @@ where
     }
 
     pub fn from_value(v: T) -> Self {
-        unimplemented!();
+        let c1 = glm::Vector4::new(v, v, v, v);
+        let c2 = glm::Vector4::new(v, v, v, v);
+        let c3 = glm::Vector4::new(v, v, v, v);
+        let c4 = glm::Vector4::new(v, v, v, v);
+
+        let internal = glm::Matrix4::<T>::new(c1, c2, c3, c4);
+
+        Mat4 { internal }
     }
 
     pub fn translate(&mut self, trans_vec: Vec3<T>) {
