@@ -2,6 +2,9 @@ extern crate sdl2;
 
 use sdl2::video::{gl_attr::GLAttr, GLContext, Window};
 
+use std::ffi::CString;
+use crate::math::matrix::Mat4f32;
+
 pub fn set_attr(attr: GLAttr) {
     attr.set_context_profile(sdl2::video::GLProfile::Core);
     attr.set_context_version(4, 5);
@@ -146,6 +149,31 @@ impl GlTexture {
     pub fn bind(&self) {
         unsafe {
             gl::BindTexture(gl::TEXTURE_2D, self.texture);
+        }
+    }
+}
+
+pub(crate) struct GlTransform {
+    transform_matrix: Mat4f32,
+    uniform_location: i32,
+}
+
+impl GlTransform {
+    pub fn new(transform_matrix: Mat4f32,
+               shader: &crate::renderer::shader::GLShaderProgram,
+               uniform_name: &str) -> Self {
+        let attr_name = CString::new(uniform_name).unwrap();
+
+        let uniform_location = unsafe {
+            gl::GetUniformLocation(shader.id(), attr_name.as_ptr())
+        };
+
+        GlTransform { transform_matrix, uniform_location }
+    }
+
+    pub fn transform(&self) {
+        unsafe {
+            gl::UniformMatrix4fv(self.uniform_location, 1, gl::FALSE, self.transform_matrix.internal.as_ptr())
         }
     }
 }

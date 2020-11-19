@@ -135,6 +135,14 @@ impl GLShaderProgram {
             gl::Uniform1i(gl::GetUniformLocation(self.id, uniform_name.as_ptr()), value);
         }
     }
+
+    pub fn uniform_loc(&self, attr: &str) -> i32 {
+        let uniform_name = CString::new(attr).unwrap();
+
+        unsafe {
+            gl::GetUniformLocation(self.id, uniform_name.as_ptr())
+        }
+    }
 }
 
 impl Drop for GLShaderProgram {
