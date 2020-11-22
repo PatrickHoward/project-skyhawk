@@ -154,26 +154,23 @@ impl GlTexture {
 }
 
 pub(crate) struct GlTransform {
-    transform_matrix: Mat4f32,
     uniform_location: i32,
 }
 
 impl GlTransform {
-    pub fn new(transform_matrix: Mat4f32,
-               shader: &crate::renderer::shader::GLShaderProgram,
-               uniform_name: &str) -> Self {
+    pub fn new( shader: &crate::renderer::shader::GLShaderProgram, uniform_name: &str) -> Self {
         let attr_name = CString::new(uniform_name).unwrap();
 
         let uniform_location = unsafe {
             gl::GetUniformLocation(shader.id(), attr_name.as_ptr())
         };
 
-        GlTransform { transform_matrix, uniform_location }
+        GlTransform { uniform_location }
     }
 
-    pub fn transform(&self) {
+    pub fn transform(&self, transform_mat: &Mat4f32) {
         unsafe {
-            gl::UniformMatrix4fv(self.uniform_location, 1, gl::FALSE, self.transform_matrix.internal.as_ptr())
+            gl::UniformMatrix4fv(self.uniform_location, 1, gl::FALSE, transform_mat.internal.as_ptr())
         }
     }
 }

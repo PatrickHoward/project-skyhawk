@@ -8,9 +8,14 @@ pub enum Axis {
     X,
     Y,
     Z,
+    XY,
+    XZ,
+    YZ,
+    XYZ,
+    ARBITRARY(Vec3f32)
 }
 
-// TODO: Make Mat4 a generic type eventually
+// TODO: Make Mat4f32 a generic type eventually
 ///Wrapped type to interact with nalgebra_glm and hawk_engine's Vec classes
 pub struct Mat4f32 {
    pub internal: glm::Mat4,
@@ -60,6 +65,11 @@ impl Mat4f32 {
             Axis::X => glm::vec3(1.0f32, 0.0f32, 0.0f32),
             Axis::Y => glm::vec3(0.0f32, 1.0f32, 0.0f32),
             Axis::Z => glm::vec3(0.0f32, 0.0f32, 1.0f32),
+            Axis::XY => glm::vec3(1.0f32, 1.0f32, 0.0f32),
+            Axis::XZ => glm::vec3(1.0f32, 0.0f32, 1.0f32),
+            Axis::YZ => glm::vec3(0.0f32, 1.0f32, 1.0f32),
+            Axis::XYZ => glm::vec3(1.0f32, 1.0f32, 1.0f32),
+            Axis::ARBITRARY(v) => glm::vec3(v.x, v.y, v.z),
         };
 
         let rad = glm::radians(&glm::vec1(deg)).data[0];

@@ -1,17 +1,15 @@
 pub mod math;
 pub mod renderer;
 
-use math::{Vec3f32, Vec2f32, matrix::Mat4f32};
+use math::{Vec3f32, Vec2f32, matrix::{Mat4f32, Axis}};
 
 use renderer::{
     color::Color,
     open_gl,
     vertex::{AsGLVert, GLVert, Vertex},
 };
-use std::{
-    ffi::CString,
-};
-use crate::math::matrix::Axis;
+
+use std::ffi::CString;
 
 pub fn start() {
     let points: [Vec3f32; 4] = [
@@ -85,11 +83,8 @@ pub fn start() {
     let vao = open_gl::VertexArray::new();
 
     let mut transform = Mat4f32::identity();
-    transform.rotate(20.0f32, Axis::Z);
-    transform.scale(Vec3f32::new(0.5f32, 0.5f32, 0.5f32));
 
     let gl_transform = open_gl::GlTransform::new(
-        transform,
         &shader_program,
         "transform",
     );
@@ -157,7 +152,8 @@ pub fn start() {
         vao.bind();
         ebo.bind();
 
-        gl_transform.transform();
+        gl_transform.transform(&transform);
+        transform.rotate(1.0f32, Axis::XYZ);
 
         unsafe {
             gl::DrawElements(gl::TRIANGLES, 6, gl::UNSIGNED_INT, 0 as *const gl::types::GLvoid);
