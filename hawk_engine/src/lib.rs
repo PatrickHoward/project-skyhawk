@@ -1,5 +1,6 @@
 pub mod math;
 pub mod renderer;
+pub mod input;
 
 use math::{Vec3f32, Vec2f32, matrix::{Mat4f32, Axis}};
 
@@ -9,7 +10,10 @@ use renderer::{
     vertex::{AsGLVert, GLVert, Vertex},
 };
 
+use input::{Input, InputMapping};
+
 use std::ffi::CString;
+use sdl2::event::Event;
 
 pub fn start() {
     let points: [Vec3f32; 4] = [
@@ -89,6 +93,8 @@ pub fn start() {
         "transform",
     );
 
+    let mut input = Input::new();
+
     vao.bind();
 
     vbo.bind();
@@ -116,26 +122,36 @@ pub fn start() {
     'main: loop {
         for ev in ev_pump.poll_iter() {
             match ev {
-                sdl2::event::Event::Quit { .. } => break 'main,
-                sdl2::event::Event::KeyDown {
-                    scancode: Some(key),
-                    ..
-                } => match key {
-                    sdl2::keyboard::Scancode::Escape => break 'main,
-                    sdl2::keyboard::Scancode::Space => unsafe {
-                        if !wireframe_enable {
-                            gl::PolygonMode(gl::FRONT_AND_BACK, gl::LINE);
-                            wireframe_enable = true;
-                        } else {
-                            gl::PolygonMode(gl::FRONT_AND_BACK, gl::FILL);
-                            wireframe_enable = false;
-                        }
-                   },
-                    _ => {}
-                }
+                Event::Quit { .. } => break 'main,
+                Event::KeyDown {scancode: Some(key), .. } => input.set(InputMapping::Keyboard(key as i32), true),
+                Event::KeyUp {scancode: Some(key), .. } => input.set(InputMapping::Keyboard(key as i32), false),
+                Event::MouseButtonDown { mouse_btn, .. } => input.set(InputMapping::Mouse(mouse_btn), true),
+                Event::MouseButtonUp { mouse_btn, .. } => input.set(InputMapping::Mouse(mouse_btn), false),
                 _ => {}
             }
         }
+
+        const TRIGGER_WIREFRAME: InputMapping = InputMapping::Mouse(sdl2::mouse::MouseButton::Left);
+        const EXIT_PROGRAM: InputMapping = InputMapping::Keyboard(sdl2::keyboard::Scancode::Escape as i32);
+
+        if input.mapping_pressed(TRIGGER_WIREFRAME) {
+            unsafe {
+                if !wireframe_enable {
+                    gl::PolygonMode(gl::FRONT_AND_BACK, gl::LINE);
+                    wireframe_enable = true;
+                } else {
+                    gl::PolygonMode(gl::FRONT_AND_BACK, gl::FILL);
+                    wireframe_enable = false;
+                }
+           }
+        }
+
+        if input.mapping_pressed(EXIT_PROGRAM) {
+            break 'main;
+        }
+
+        input.tick();
+
 
         unsafe { gl::Clear(gl::COLOR_BUFFER_BIT) };
         shader_program.use_program();
