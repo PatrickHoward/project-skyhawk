@@ -1,12 +1,14 @@
+type KeyboardState = [bool; 264];
+
 pub struct Keyboard {
-    key_state: [bool; 219],
-    old_key_state: [bool; 219],
+    key_state: KeyboardState,
+    old_key_state: KeyboardState,
 }
 
 impl Keyboard {
     pub fn new() -> Self {
-        let key_state = [false; 219];
-        let old_key_state = [false; 219];
+        let key_state = [false; 264];
+        let old_key_state = [false; 264];
 
         Keyboard {
             key_state, old_key_state
