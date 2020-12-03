@@ -12,8 +12,14 @@ use renderer::{
 
 use input::{Input, InputMapping};
 
-use std::ffi::CString;
+use std::{ffi::CString, time};
+
 use sdl2::event::Event;
+
+pub fn throttle(target_fps: i32) {
+    let now = time::SystemTime::now();
+    std::thread::sleep(time::Duration::new(0, 800));
+}
 
 pub fn start() {
     let points: [Vec3f32; 4] = [
@@ -117,9 +123,13 @@ pub fn start() {
     }
 
     let mut wireframe_enable = false;
+    let mut last_frame_start = std::time::Instant::now();
 
     let mut ev_pump = sdl.event_pump().unwrap();
     'main: loop {
+
+        throttle(60);
+
         for ev in ev_pump.poll_iter() {
             match ev {
                 Event::Quit { .. } => break 'main,
@@ -131,27 +141,14 @@ pub fn start() {
             }
         }
 
-        const TRIGGER_WIREFRAME: InputMapping = InputMapping::Mouse(sdl2::mouse::MouseButton::Left);
-        const EXIT_PROGRAM: InputMapping = InputMapping::Keyboard(sdl2::keyboard::Scancode::Escape as i32);
+        input.tick();
 
-        if input.mapping_pressed(TRIGGER_WIREFRAME) {
-            unsafe {
-                if !wireframe_enable {
-                    gl::PolygonMode(gl::FRONT_AND_BACK, gl::LINE);
-                    wireframe_enable = true;
-                } else {
-                    gl::PolygonMode(gl::FRONT_AND_BACK, gl::FILL);
-                    wireframe_enable = false;
-                }
-           }
-        }
+        const TRIGGER_WIREFRAME: InputMapping = InputMapping::Keyboard(sdl2::keyboard::Scancode::E as i32);
+        const EXIT_PROGRAM: InputMapping = InputMapping::Keyboard(sdl2::keyboard::Scancode::Escape as i32);
 
         if input.mapping_pressed(EXIT_PROGRAM) {
             break 'main;
         }
-
-        input.tick();
-
 
         unsafe { gl::Clear(gl::COLOR_BUFFER_BIT) };
         shader_program.use_program();
@@ -169,7 +166,7 @@ pub fn start() {
         ebo.bind();
 
         gl_transform.transform(&transform);
-        transform.rotate(1.0f32, Axis::XYZ);
+        // transform.rotate(1.0f32, Axis::XYZ);
 
         unsafe {
             gl::DrawElements(gl::TRIANGLES, 6, gl::UNSIGNED_INT, 0 as *const gl::types::GLvoid);

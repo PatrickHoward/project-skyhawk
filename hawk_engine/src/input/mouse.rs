@@ -8,7 +8,7 @@ use sdl2::mouse::MouseButton;
 //     ScrollDown,
 // }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone)]
 struct MouseState {
     pub left: bool,
     pub right: bool,

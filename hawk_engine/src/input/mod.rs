@@ -24,6 +24,8 @@ impl Input {
         Input { keyboard, mouse}
     }
 
+    // This is an open/closed principle violation, maybe we can make a nice abstraction
+    // using traits?
     pub fn mapping_pressed(&self, mapping: InputMapping) -> bool {
         match mapping {
             InputMapping::Keyboard(scancode) => self.keyboard.is_pressed(scancode),
