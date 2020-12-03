@@ -1,6 +1,7 @@
 pub mod primitive;
 pub mod vector;
 pub mod matrix;
+pub mod rotation;
 
 use primitive::{Rect2D};
 

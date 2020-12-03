@@ -1,19 +1,7 @@
-extern crate nalgebra_glm as glm;
+extern crate nalgebra_glm as glm; // Todo: Probably shouldn't live here anymore now that multiple modules rely on this
 
-use crate::math::{Vec4f32, Vec3f32};
-use self::glm::Vec3;
-
-//TODO: Move me out into another place
-pub enum Axis {
-    X,
-    Y,
-    Z,
-    XY,
-    XZ,
-    YZ,
-    XYZ,
-    ARBITRARY(Vec3f32)
-}
+use crate::math::{Vec4f32, Vec3f32, rotation::Axis};
+use self::glm::{Vec3, Mat4};
 
 // TODO: Make Mat4f32 a generic type eventually
 ///Wrapped type to interact with nalgebra_glm and hawk_engine's Vec classes
@@ -51,6 +39,23 @@ impl Mat4f32 {
             0.0f32, 0.0f32, 1.0f32, 0.0f32,
             0.0f32, 0.0f32, 0.0f32, 1.0f32
         );
+
+        Mat4f32 { internal }
+    }
+
+    pub fn identity_from_value(v: f32) -> Self {
+        let internal = glm::mat4(
+            v.clone(), 0.0f32, 0.0f32, 0.0f32,
+            0.0f32,v.clone(), 0.0f32, 0.0f32,
+            0.0f32, 0.0f32, v.clone(), 0.0f32,
+            0.0f32, 0.0f32, 0.0f32, v
+        );
+
+        Mat4f32 { internal }
+    }
+
+    pub fn perspective(fov: f32, aspect: f32, near: f32, far: f32) -> Self {
+        let internal: Mat4 = glm::perspective(aspect,glm::radians(&glm::vec1(fov)).data[0], near, far);
 
         Mat4f32 { internal }
     }
