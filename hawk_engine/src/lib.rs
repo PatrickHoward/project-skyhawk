@@ -18,6 +18,8 @@ use sdl2::event::Event;
 use crate::math::vector::Vec3;
 
 pub fn throttle(target_fps: i32) {
+    // TODO: Have this throttle to the target_fps
+
     let now = time::SystemTime::now();
     std::thread::sleep(time::Duration::new(0, 800));
 }
@@ -83,11 +85,6 @@ pub fn start() {
     //     Vec2f32::new(0.0f32, 1.0f32),
     // ];
 
-
-    let indices: [u32; 6] = [
-        0, 1, 3,
-        1, 2, 3,
-    ];
     let tex_cords: [Vec2f32; 36] = [
         Vec2f32::new(0.0f32, 0.0f32),
         Vec2f32::new(1.0f32, 0.0f32),
@@ -130,6 +127,24 @@ pub fn start() {
         Vec2f32::new(1.0f32, 0.0f32),
         Vec2f32::new(0.0f32, 0.0f32),
         Vec2f32::new(0.0f32, 1.0f32),
+    ];
+
+    let indices: [u32; 6] = [
+        0, 1, 3,
+        1, 2, 3,
+    ];
+
+    let cube_pos: [Vec3f32; 10] = [
+        Vec3f32::zero(),
+        Vec3f32::new(2.0f32,  5.0f32, -15.0f32),
+        Vec3f32::new(-1.5f32, -2.2f32, -2.5f32),
+        Vec3f32::new(-3.8f32, -2.0f32, -12.3f32),
+        Vec3f32::new(2.4f32, -0.4f32, -3.5f32),
+        Vec3f32::new(-1.7f32,  3.0f32, -7.5f32),
+        Vec3f32::new(1.3f32, -2.0f32, -2.5f32),
+        Vec3f32::new(1.5f32,  2.0f32, -2.5f32),
+        Vec3f32::new(1.5f32,  0.2f32, -1.5f32),
+        Vec3f32::new(-1.3f32,  1.0f32, -1.5f32)
     ];
 
     let mut verts: Vec<GLVert> = vec![];
@@ -179,8 +194,7 @@ pub fn start() {
     let vbo = open_gl::ArrayBuffer::new();
     let vao = open_gl::VertexArray::new();
 
-    let mut model = Mat4f32::identity();
-    model.rotate(-55.0f32, Axis::X);
+    let mut models: [Mat4f32; 10] = [Mat4f32::identity(); 10];
 
     let mut view = Mat4f32::identity();
     view.translate(Vec3f32::new(0.0f32, 0.0f32, -3.0f32));
@@ -192,17 +206,17 @@ pub fn start() {
         100.0f32
     );
 
-    let gl_model = open_gl::GlTransform::new(
+    let gl_model = open_gl::GlMat4f32Handle::new(
         &shader_program,
         "model",
     );
 
-    let gl_view = open_gl::GlTransform::new(
+    let gl_view = open_gl::GlMat4f32Handle::new(
         &shader_program,
         "view",
     );
 
-    let gl_projection = open_gl::GlTransform::new(
+    let gl_projection = open_gl::GlMat4f32Handle::new(
         &shader_program,
         "projection"
     );
@@ -253,13 +267,7 @@ pub fn start() {
 
         input.tick();
 
-        const TRIGGER_WIREFRAME: InputMapping = InputMapping::Keyboard(sdl2::keyboard::Scancode::E as i32);
-        const LEFT: InputMapping = InputMapping::Keyboard(sdl2::keyboard::Scancode::A as i32);
-        const RIGHT: InputMapping = InputMapping::Keyboard(sdl2::keyboard::Scancode::D as i32);
-        const UP: InputMapping = InputMapping::Keyboard(sdl2::keyboard::Scancode::W as i32);
-        const DOWN: InputMapping = InputMapping::Keyboard(sdl2::keyboard::Scancode::S as i32);
         const EXIT_PROGRAM: InputMapping = InputMapping::Keyboard(sdl2::keyboard::Scancode::Escape as i32);
-
         if input.mapping_down(EXIT_PROGRAM) {
             break 'main;
         }
@@ -279,33 +287,27 @@ pub fn start() {
         vao.bind();
         // ebo.bind();
 
-        gl_model.transform(&model);
         gl_view.transform(&view);
         gl_projection.transform(&projection);
 
-        // model.rotate(1.0f32, Axis::ARBITRARY(Vec3f32::new(0.5f32, 1.0f32, 0.0f32)));
+        let mut i = 0;
+        for trans in cube_pos.iter() {
+            let mut model = Mat4f32::identity();
+            model.translate(*trans);
+            model.rotate(20.0f32 * i as f32, Axis::ARBITRARY(Vec3f32::new(1.0f32, 0.3f32, 0.5f32)));
 
-        if input.mapping_down(UP) {
-            model.rotate(1.0f32, Axis::X);
+            gl_model.transform(&model);
+
+            unsafe {
+                // gl::DrawElements(gl::TRIANGLES, 6, gl::UNSIGNED_INT, 0 as *const gl::types::GLvoid);
+                gl::DrawArrays(gl::TRIANGLES, 0, 36);
+            }
+
+            i += 1;
         }
 
-        if input.mapping_down(DOWN) {
-            model.rotate(-1.0f32, Axis::X);
-        }
 
-        if input.mapping_down(LEFT) {
-            model.rotate(-1.0f32, Axis::Z);
-        }
 
-        if input.mapping_down(RIGHT) {
-            model.rotate(1.0f32, Axis::Z);
-        }
-
-        unsafe {
-            // gl::DrawElements(gl::TRIANGLES, 6, gl::UNSIGNED_INT, 0 as *const gl::types::GLvoid);
-
-            gl::DrawArrays(gl::TRIANGLES, 0, 36);
-        }
 
         window.gl_swap_window();
     }

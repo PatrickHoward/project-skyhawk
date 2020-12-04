@@ -1,10 +1,11 @@
 extern crate nalgebra_glm as glm; // Todo: Probably shouldn't live here anymore now that multiple modules rely on this
 
 use crate::math::{Vec4f32, Vec3f32, rotation::Axis};
-use self::glm::{Vec3, Mat4};
+use self::glm::{Mat4};
 
 // TODO: Make Mat4f32 a generic type eventually
 ///Wrapped type to interact with nalgebra_glm and hawk_engine's Vec classes
+#[derive(Clone, Copy)]
 pub struct Mat4f32 {
    pub internal: glm::Mat4,
 }
