@@ -4,6 +4,7 @@ use sdl2::video::{gl_attr::GLAttr, GLContext, Window};
 
 use std::ffi::CString;
 use crate::math::matrix::Mat4f32;
+use crate::renderer::graphics::ImageRGB;
 
 pub fn set_attr(attr: GLAttr) {
     attr.set_context_profile(sdl2::video::GLProfile::Core);
@@ -117,9 +118,7 @@ pub(crate) struct GlTexture {
 }
 
 impl GlTexture {
-    pub fn new(img_path: &std::path::Path) -> Self {
-        let graphic = crate::renderer::graphics::ImageRGB::new(&img_path);
-
+    pub fn new(graphic: ImageRGB) -> Self {
         let mut texture: u32 = 0;
         unsafe {
             gl::GenTextures(1, &mut texture);
@@ -144,6 +143,11 @@ impl GlTexture {
         }
 
         GlTexture { texture }
+    }
+
+    pub fn from_path(img_path: &std::path::Path) -> Self {
+        let graphic = crate::renderer::graphics::ImageRGB::new(&img_path);
+        Self::new(graphic)
     }
 
     pub fn bind(&self) {

@@ -1,8 +1,13 @@
 pub mod math;
 pub mod renderer;
 pub mod input;
+pub mod clock;
+
+use input::{Input, InputMapping};
 
 use math::{Vec3f32, Vec2f32, matrix::Mat4f32, rotation::Axis};
+
+use clock::Clock;
 
 use renderer::{
     color::Color,
@@ -10,19 +15,9 @@ use renderer::{
     vertex::{AsGLVert, GLVert, Vertex},
 };
 
-use input::{Input, InputMapping};
-
 use std::{ffi::CString, time};
 
 use sdl2::event::Event;
-use crate::math::vector::Vec3;
-
-pub fn throttle(target_fps: i32) {
-    // TODO: Have this throttle to the target_fps
-
-    let now = time::SystemTime::now();
-    std::thread::sleep(time::Duration::new(0, 800));
-}
 
 pub fn start() {
     // let points: [Vec3f32; 4] = [
@@ -152,8 +147,12 @@ pub fn start() {
         verts.push(Vertex::new(points[i], colors[i], tex_cords[i]).as_glvert());
     }
 
+    // Initialize SDL and OpenGL
     let sdl = sdl2::init().expect("Failed to initialize SDL!");
     let video_subsystem = sdl.video().unwrap();
+    let mut timer = sdl.timer().unwrap();
+
+
 
     let gl_attributes = video_subsystem.gl_attr();
     gl_attributes.set_context_profile(sdl2::video::GLProfile::Core);
@@ -171,9 +170,14 @@ pub fn start() {
     let _gl =
         gl::load_with(|s| video_subsystem.gl_get_proc_address(s) as *const std::os::raw::c_void);
 
-    let box_texture = open_gl::GlTexture::new(std::path::Path::new("container.jpg"));
-    let ferris_texture = open_gl::GlTexture::new(std::path::Path::new("ferris.png"));
+    // -----
 
+    // Create Textures
+    let box_texture = open_gl::GlTexture::from_path(std::path::Path::new("container.jpg"));
+    let ferris_texture = open_gl::GlTexture::from_path(std::path::Path::new("ferris.png"));
+    // -----
+
+    // Create shaders
     let vert_shader =
         renderer::shader::VertexShader::new(
             &CString::new(include_str!("triangle.vert")).unwrap())
@@ -187,19 +191,22 @@ pub fn start() {
     let shader_program =
         renderer::shader::GLShaderProgram::new(frag_shader, vert_shader)
         .expect("Failed to create Shader program");
+    // ----
 
     let clear_color = Color::black().as_tuple();
 
+    // Create buffers
     let ebo = open_gl::ElementBuffer::new();
     let vbo = open_gl::ArrayBuffer::new();
     let vao = open_gl::VertexArray::new();
+    // ----
 
-    let mut models: [Mat4f32; 10] = [Mat4f32::identity(); 10];
+    const camera_radius: f32 = 10.0f32;
 
     let mut view = Mat4f32::identity();
     view.translate(Vec3f32::new(0.0f32, 0.0f32, -3.0f32));
 
-    let mut projection = Mat4f32::perspective(
+    let projection = Mat4f32::perspective(
         45.0f32,
         800.0f32 / 600.0f32,
         0.1f32,
@@ -245,22 +252,27 @@ pub fn start() {
         gl::ClearColor(clear_color.0, clear_color.1, clear_color.2, clear_color.3);
     }
 
-    let mut wireframe_enable = false;
-    let mut last_frame_start = std::time::Instant::now();
+    let mut clock = Clock::new(timer.performance_counter());
 
     let mut ev_pump = sdl.event_pump().unwrap();
 
     'main: loop {
 
-        // throttle(60);
+        clock.throttle(60);
+        clock.tick(timer.performance_counter(), timer.performance_frequency());
 
         for ev in ev_pump.poll_iter() {
             match ev {
-                Event::Quit { .. } => break 'main,
-                Event::KeyDown {scancode: Some(key), .. } => input.set(InputMapping::Keyboard(key as i32), true),
-                Event::KeyUp {scancode: Some(key), .. } => input.set(InputMapping::Keyboard(key as i32), false),
-                Event::MouseButtonDown { mouse_btn, .. } => input.set(InputMapping::Mouse(mouse_btn), true),
-                Event::MouseButtonUp { mouse_btn, .. } => input.set(InputMapping::Mouse(mouse_btn), false),
+                Event::Quit { .. } =>
+                    break 'main,
+                Event::KeyDown { scancode: Some(key), .. } =>
+                    input.set(InputMapping::Keyboard(key as i32), true),
+                Event::KeyUp { scancode: Some(key), .. } =>
+                    input.set(InputMapping::Keyboard(key as i32), false),
+                Event::MouseButtonDown { mouse_btn, .. } =>
+                    input.set(InputMapping::Mouse(mouse_btn), true),
+                Event::MouseButtonUp { mouse_btn, .. } =>
+                    input.set(InputMapping::Mouse(mouse_btn), false),
                 _ => {}
             }
         }
@@ -287,6 +299,15 @@ pub fn start() {
         vao.bind();
         // ebo.bind();
 
+        let camera_x = (timer.ticks() as f32).sin() * camera_radius;
+        let camera_z = (timer.ticks() as f32).cos() * camera_radius;
+
+        let view = Mat4f32::look_at(
+            Vec3f32::new(camera_x, 0.0f32, camera_z),
+            Vec3f32::zero(),
+            Vec3f32::new(0.0f32, 1.0f32, 0.0f32)
+        );
+
         gl_view.transform(&view);
         gl_projection.transform(&projection);
 
@@ -305,9 +326,6 @@ pub fn start() {
 
             i += 1;
         }
-
-
-
 
         window.gl_swap_window();
     }

@@ -26,3 +26,17 @@ pub type Rect2Di32 = Rect2D<i32>;
 //
 // pub type Cube3Df32 = Cube3D<f32>;
 // pub type Cube3Di32 = Cube3D<i32>;
+
+// TODO: Is this really something I should do to enforce this as a numeric primative?
+// trait Numeric {}
+//
+// impl Numeric for f32 {}
+// impl Numeric for f64 {}
+// impl Numeric for i8 {}
+// impl Numeric for i32 {}
+// impl Numeric for i64 {}
+// impl Numeric for i128 {}
+// impl Numeric for u8 {}
+// impl Numeric for u32 {}
+// impl Numeric for u64 {}
+// impl Numeric for u128 {}

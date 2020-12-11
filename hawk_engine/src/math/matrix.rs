@@ -57,6 +57,15 @@ impl Mat4f32 {
 
     pub fn perspective(fov: f32, aspect: f32, near: f32, far: f32) -> Self {
         let internal: Mat4 = glm::perspective(aspect,glm::radians(&glm::vec1(fov)).data[0], near, far);
+        Mat4f32 { internal }
+    }
+
+    pub fn look_at(pos: Vec3f32, tar: Vec3f32, up: Vec3f32) -> Self {
+        let internal: Mat4 = glm::look_at(
+            &glm::vec3(pos.x, pos.y, pos.z),
+            &glm::vec3(tar.x, tar.y, tar.z),
+            &glm::vec3(up.x, up.y, up.z),
+        );
 
         Mat4f32 { internal }
     }

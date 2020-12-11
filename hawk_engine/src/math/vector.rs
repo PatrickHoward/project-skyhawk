@@ -1,6 +1,6 @@
 use std::{ops::{Add, Sub, Mul, Neg}, clone::Clone};
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, PartialOrd, Eq, Ord)]
 #[repr(C)]
 pub struct Vec2<T>
 where
@@ -82,7 +82,7 @@ impl From<(f32, f32)> for Vec2<f32> {
     }
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, PartialOrd, Eq, Ord)]
 #[repr(C)]
 pub struct Vec3<T>
 where
@@ -164,6 +164,24 @@ impl Vec3<f32> {
         Vec3::<f32>::new(1.0f32, 1.0f32, 1.0f32)
     }
     pub fn zero() -> Self { Vec3::<f32>::new(0.0f32, 0.0f32, 0.0f32) }
+
+    // TODO: Make a generic normalize
+    pub fn normalize(self) -> Result<Self, ()> {
+        let mag = (
+              self.x.clone() * self.x.clone()
+            + self.y.clone() * self.y.clone()
+            + self.z.clone() * self.z.clone()).sqrt();
+
+        if mag.is_nan() {
+            return Err(());
+        }
+
+        Ok(Self {
+            x: self.x / mag.clone(),
+            y: self.y / mag.clone(),
+            z: self.z / mag
+        })
+    }
 }
 
 impl From<(f32, f32, f32)> for Vec3<f32> {
@@ -172,7 +190,7 @@ impl From<(f32, f32, f32)> for Vec3<f32> {
     }
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, PartialOrd, Eq, Ord)]
 #[repr(C)]
 pub struct Vec4<T> {
     pub x: T,
@@ -248,5 +266,34 @@ impl Vec4<f32> {
 impl From<(f32, f32, f32, f32)> for Vec4<f32> {
     fn from(data: (f32, f32, f32, f32)) -> Self {
         Vec4::<f32>::new(data.0, data.1, data.2, data.3)
+    }
+}
+
+#[cfg(test)]
+mod VectorTests {
+    use crate::math::vector::*;
+
+    #[test]
+    fn cross_product() {
+        let vec_a = Vec3::<f32>::new(3.0f32, 2.0f32, 1.0f32);
+        let vec_b = Vec3::<f32>::new(1.0f32, 2.0f32, 3.0f32);
+
+        assert_eq!(vec_a.cross(vec_b), Vec3::<f32>::new(4.0f32, -8.0f32, 4.0f32));
+    }
+
+    #[test]
+    fn dot_product_for_Vec3() {
+        let vec_a = Vec3::<f32>::new(3.0f32, 2.0f32, 1.0f32);
+        let vec_b = Vec3::<f32>::new(1.0f32, 2.0f32, 3.0f32);
+
+        assert_eq!(vec_a.dot(vec_b), 10.0f32);
+    }
+
+    #[test]
+    fn normalize_Vec3() {
+        let vec_a = Vec3::<f32>::new(3.0f32, 2.0f32, 1.0f32);
+        let norm_vec_a = Vec3::<f32>::new(0.8017837f32, 0.5345225f32, 0.26726124f32);
+
+        assert_eq!(vec_a.normalize().unwrap(), norm_vec_a);
     }
 }
