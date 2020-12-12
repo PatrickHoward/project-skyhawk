@@ -129,6 +129,10 @@ pub fn start() {
         Vec3f32::new(-1.3f32, 1.0f32, -1.5f32),
     ];
 
+    let mut camera_pos = Vec3f32::new(0.0f32, 0.0f32, 3.0f32);
+    let mut camera_front = Vec3f32::new(0.0f32, 0.0f32, -1.0f32);
+    let mut camera_up = Vec3f32::new(0.0f32, 1.0f32, 0.0f32);
+
     let mut verts: Vec<GLVert> = vec![];
     for i in 0..points.len() {
         verts.push(Vertex::new(points[i], colors[i], tex_cords[i]).as_glvert());
@@ -258,6 +262,39 @@ pub fn start() {
             break 'main;
         }
 
+        const UP: InputMapping = InputMapping::Keyboard(sdl2::keyboard::Scancode::W as i32);
+        const DOWN: InputMapping = InputMapping::Keyboard(sdl2::keyboard::Scancode::S as i32);
+        const LEFT: InputMapping = InputMapping::Keyboard(sdl2::keyboard::Scancode::A as i32);
+        const RIGHT: InputMapping = InputMapping::Keyboard(sdl2::keyboard::Scancode::D as i32);
+
+        const CAMERA_SPEED: f32 = 0.5;
+
+        if input.mapping_down(UP) {
+            camera_pos = camera_pos + camera_front.mul_scalar(CAMERA_SPEED);
+        }
+
+        if input.mapping_down(DOWN) {
+            camera_pos = camera_pos - camera_front.mul_scalar(CAMERA_SPEED);
+        }
+
+        if input.mapping_down(LEFT) {
+            camera_pos = camera_pos
+                - camera_front
+                    .cross(camera_up)
+                    .normalize()
+                    .unwrap()
+                    .mul_scalar(CAMERA_SPEED);
+        }
+
+        if input.mapping_down(RIGHT) {
+            camera_pos = camera_pos
+                + camera_front
+                    .cross(camera_up)
+                    .normalize()
+                    .unwrap()
+                    .mul_scalar(CAMERA_SPEED);
+        }
+
         unsafe { gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT) };
         shader_program.use_program();
 
@@ -277,14 +314,7 @@ pub fn start() {
         vao.bind();
         // ebo.bind();
 
-        let camera_x = (timer.ticks() as f32).sin() * camera_radius;
-        let camera_z = (timer.ticks() as f32).cos() * camera_radius;
-
-        let view = Mat4f32::look_at(
-            Vec3f32::new(camera_x, 0.0f32, camera_z),
-            Vec3f32::zero(),
-            Vec3f32::new(0.0f32, 1.0f32, 0.0f32),
-        );
+        let view = Mat4f32::look_at(camera_pos, camera_pos + camera_front, camera_up);
 
         gl_view.transform(&view);
 
