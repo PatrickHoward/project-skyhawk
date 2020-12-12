@@ -5,7 +5,7 @@ pub mod mem;
 pub mod renderer;
 
 use input::{Input, InputMapping};
-use math::{matrix::Mat4f32, rotation::Axis, Vec2f32, Vec3f32};
+use math::{matrix::Mat4f32, rotation, rotation::Axis, Vec2f32, Vec3f32};
 
 use clock::Clock;
 
@@ -15,7 +15,7 @@ use renderer::{
     vertex::{AsGLVert, GLVert, Vertex},
 };
 
-use std::{ffi::CString, time};
+use std::ffi::CString;
 
 use sdl2::event::Event;
 
@@ -133,6 +133,9 @@ pub fn start() {
     let mut camera_front = Vec3f32::new(0.0f32, 0.0f32, -1.0f32);
     let mut camera_up = Vec3f32::new(0.0f32, 1.0f32, 0.0f32);
 
+    let mut pitch: f32 = 0.0;
+    let mut yaw: f32 = -90.0;
+
     let mut verts: Vec<GLVert> = vec![];
     for i in 0..points.len() {
         verts.push(Vertex::new(points[i], colors[i], tex_cords[i]).as_glvert());
@@ -194,11 +197,8 @@ pub fn start() {
     view.translate(Vec3f32::new(0.0f32, 0.0f32, -3.0f32));
 
     let projection = Mat4f32::perspective(45.0f32, 800.0f32 / 600.0f32, 0.1f32, 100.0f32);
-
     let gl_model = open_gl::GlMat4f32Handle::new(&shader_program, "model");
-
     let gl_view = open_gl::GlMat4f32Handle::new(&shader_program, "view");
-
     let gl_projection = open_gl::GlMat4f32Handle::new(&shader_program, "projection");
 
     let mut input = Input::new();
@@ -233,6 +233,8 @@ pub fn start() {
         clock.throttle(60);
         clock.tick(timer.performance_counter(), timer.performance_frequency());
 
+        input.tick();
+
         for ev in ev_pump.poll_iter() {
             match ev {
                 Event::Quit { .. } => break 'main,
@@ -250,11 +252,12 @@ pub fn start() {
                 Event::MouseButtonUp { mouse_btn, .. } => {
                     input.set(InputMapping::Mouse(mouse_btn), false)
                 }
+                Event::MouseMotion { x, y, .. } => {
+                    input.set(InputMapping::MousePos(x, y), false);
+                }
                 _ => {}
             }
         }
-
-        input.tick();
 
         const EXIT_PROGRAM: InputMapping =
             InputMapping::Keyboard(sdl2::keyboard::Scancode::Escape as i32);
@@ -267,14 +270,29 @@ pub fn start() {
         const LEFT: InputMapping = InputMapping::Keyboard(sdl2::keyboard::Scancode::A as i32);
         const RIGHT: InputMapping = InputMapping::Keyboard(sdl2::keyboard::Scancode::D as i32);
 
-        const CAMERA_SPEED: f32 = 0.5;
+        if pitch > 89.0 {
+            pitch = 89.0;
+        }
+        if pitch < -89.0 {
+            pitch = -89.0;
+        }
+
+        let mut camera_direction = Vec3f32::new(
+            rotation::to_rad(yaw).cos() * rotation::to_rad(pitch).cos(),
+            rotation::to_rad(pitch).sin(),
+            rotation::to_rad(yaw).sin() * rotation::to_rad(pitch).cos(),
+        );
+
+        camera_front = camera_direction.normalize().unwrap();
+
+        let mut camera_speed: f32 = clock.dt() as f32 * 2.5;
 
         if input.mapping_down(UP) {
-            camera_pos = camera_pos + camera_front.mul_scalar(CAMERA_SPEED);
+            camera_pos = camera_pos + camera_front.mul_scalar(camera_speed);
         }
 
         if input.mapping_down(DOWN) {
-            camera_pos = camera_pos - camera_front.mul_scalar(CAMERA_SPEED);
+            camera_pos = camera_pos - camera_front.mul_scalar(camera_speed);
         }
 
         if input.mapping_down(LEFT) {
@@ -283,7 +301,7 @@ pub fn start() {
                     .cross(camera_up)
                     .normalize()
                     .unwrap()
-                    .mul_scalar(CAMERA_SPEED);
+                    .mul_scalar(camera_speed);
         }
 
         if input.mapping_down(RIGHT) {
@@ -292,7 +310,7 @@ pub fn start() {
                     .cross(camera_up)
                     .normalize()
                     .unwrap()
-                    .mul_scalar(CAMERA_SPEED);
+                    .mul_scalar(camera_speed);
         }
 
         unsafe { gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT) };

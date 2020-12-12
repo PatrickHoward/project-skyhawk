@@ -1,14 +1,17 @@
 mod keyboard;
 mod mouse;
 
-use crate::input::keyboard::Keyboard;
-use crate::input::mouse::Mouse;
+use crate::{
+    input::{keyboard::Keyboard, mouse::Mouse},
+    math::Vec2f32,
+};
 
 use sdl2::mouse::MouseButton;
 
 pub enum InputMapping {
     Keyboard(i32),
     Mouse(MouseButton),
+    MousePos(i32, i32), // TODO: I shouldn't live here. A separate "axis" enum should exist instead.
 }
 
 pub struct Input {
@@ -21,7 +24,8 @@ impl Input {
     pub fn new() -> Self {
         let keyboard = Keyboard::new();
         let mouse = Mouse::new();
-        Input { keyboard, mouse}
+
+        Input { keyboard, mouse }
     }
 
     // This is an open/closed principle violation, maybe we can make a nice abstraction
@@ -30,6 +34,7 @@ impl Input {
         match mapping {
             InputMapping::Keyboard(scancode) => self.keyboard.is_pressed(scancode),
             InputMapping::Mouse(button) => self.mouse.is_pressed(button),
+            _ => false,
         }
     }
 
@@ -37,6 +42,7 @@ impl Input {
         match mapping {
             InputMapping::Keyboard(scancode) => self.keyboard.is_down(scancode),
             InputMapping::Mouse(button) => self.mouse.is_down(button),
+            _ => false,
         }
     }
 
@@ -44,13 +50,25 @@ impl Input {
         match mapping {
             InputMapping::Keyboard(scancode) => self.keyboard.is_released(scancode),
             InputMapping::Mouse(button) => self.mouse.is_released(button),
+            _ => false,
         }
+    }
+
+    pub fn get_mousepos(&self) -> Vec2f32 {
+        self.mouse.mousepos()
+    }
+
+    pub fn get_mousepos_offset(&self) -> Vec2f32 {
+        self.mouse.mousepos_offset_since_last_frame()
     }
 
     pub fn set(&mut self, mapping: InputMapping, down: bool) {
         match mapping {
             InputMapping::Keyboard(scancode) => self.keyboard.set(scancode, down),
             InputMapping::Mouse(button) => self.mouse.set(button, down),
+            InputMapping::MousePos(x, y) => {
+                self.mouse.set_mousepos(Vec2f32::new(x as f32, y as f32))
+            }
         }
     }
 
