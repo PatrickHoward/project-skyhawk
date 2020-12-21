@@ -74,5 +74,6 @@ impl Input {
 
     pub fn tick(&mut self) {
         self.keyboard.tick();
+        self.mouse.tick();
     }
 }
