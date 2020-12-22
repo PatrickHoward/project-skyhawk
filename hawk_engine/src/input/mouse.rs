@@ -44,7 +44,7 @@ impl Mouse {
         let old_mouse_state = MouseState::new();
 
         let mouse_pos = MousePos::new(0.0, 0.0);
-        let old_mouse_pos = MousePos::new(400.0, 300.0); // TODO: I shouldn't be set here!
+        let old_mouse_pos = MousePos::new(1024.0 / 2.0, 768.0 / 2.0); // TODO: I shouldn't be set here!
 
         Mouse {
             mouse_state,
@@ -57,7 +57,7 @@ impl Mouse {
 
     pub fn tick(&mut self) {
         self.old_mouse_state = self.mouse_state.clone();
-        self.old_mouse_pos = self.mouse_pos.clone();
+        self.old_mouse_pos = MousePos::new(1024.0 / 2.0, 768.0 / 2.0) //self.mouse_pos.clone();
     }
 
     pub fn set(&mut self, button: MouseButton, down: bool) {
@@ -99,7 +99,7 @@ impl Mouse {
         self.mouse_pos
     }
 
-    pub fn mousepos_offset_since_last_frame(&self) -> MousePos {
+    pub fn mousepos_offset_since_last_tick(&self) -> MousePos {
         let offset_x = self.mouse_pos.x - self.old_mouse_pos.x;
         let offset_y = self.mouse_pos.y - self.old_mouse_pos.y;
 

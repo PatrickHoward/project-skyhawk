@@ -24,9 +24,7 @@ use renderer::{
 
 use std::ffi::CString;
 
-use nalgebra_glm::proj;
-use sdl2::video::Window;
-use sdl2::{event::Event, EventPump};
+use sdl2::{event::Event, video::Window, EventPump};
 
 pub fn start() {
     let points: [Vec3f32; 36] = demos::multibox::get_verticies();
@@ -49,8 +47,10 @@ pub fn start() {
     gl_attributes.set_context_version(3, 2);
 
     let window = video_subsystem
-        .window("Hello GL", 800, 600)
-        .allow_highdpi()
+        .window("Hello GL", 1024, 768)
+        // .allow_highdpi()
+        .position_centered()
+        .fullscreen_desktop()
         .opengl()
         .build()
         .unwrap();
@@ -92,7 +92,7 @@ pub fn start() {
     let mut view = Mat4f32::identity();
     view.translate(Vec3f32::new(0.0f32, 0.0f32, -3.0f32));
 
-    let projection = Mat4f32::perspective(45.0f32, 800.0f32 / 600.0f32, 0.1f32, 100.0f32);
+    let projection = Mat4f32::perspective(45.0f32, 1024.0f32 / 768.0f32, 0.1f32, 100.0f32);
     let gl_model = GlMat4f32Handle::new(&shader_program, "model");
     let gl_view = GlMat4f32Handle::new(&shader_program, "view");
     let gl_projection = GlMat4f32Handle::new(&shader_program, "projection");
@@ -116,22 +116,26 @@ pub fn start() {
     vao.unbind();
 
     unsafe {
-        gl::Viewport(0, 0, 800, 600);
+        gl::Viewport(0, 0, 0, 0);
         gl::Enable(gl::DEPTH_TEST);
         gl::ClearColor(clear_color.0, clear_color.1, clear_color.2, clear_color.3);
     }
 
     let mut clock = Clock::new(timer.performance_counter());
-
     let mut camera = Camera::new();
-
     let mut ev_pump = sdl.event_pump().unwrap();
+
+    sdl.mouse().capture(true);
+    sdl.mouse().show_cursor(false);
 
     'main: loop {
         clock.throttle(60);
         clock.tick(timer.performance_counter(), timer.performance_frequency());
 
-        input.tick();
+        // TODO: Create window abstraction so values here are not hard coded.
+        sdl.mouse().warp_mouse_in_window(&window, 1024 / 2, 768 / 2);
+
+        let mouse_offset = input.get_mousepos_offset();
 
         let exit = process_sdl_events(&mut input, &mut ev_pump);
 
@@ -141,6 +145,8 @@ pub fn start() {
             break 'main;
         }
 
+        camera.addto_yaw(mouse_offset.x);
+        camera.addto_pitch(mouse_offset.y);
         camera.tick(clock.dt() as f32, &input);
 
         render(
@@ -156,6 +162,8 @@ pub fn start() {
             &cube_pos,
             &window,
         );
+
+        input.tick();
     }
 }
 
@@ -188,6 +196,8 @@ pub fn process_sdl_events(input: &mut Input, ev_pump: &mut EventPump) -> bool {
     false
 }
 
+// TODO: The rendering logic takes a lot of parameters, consider creating an abstraction for the
+// renderer
 pub fn render(
     shader_program: &GLShaderProgram,
     box_texture: &GlTexture,
@@ -201,7 +211,11 @@ pub fn render(
     cube_pos: &[Vec3f32; 10],
     window: &Window,
 ) {
-    unsafe { gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT) };
+    unsafe {
+        gl::Viewport(0, 0, 1680, 1050);
+        gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT)
+    };
+
     shader_program.use_program();
 
     shader_program.set_i32("texture_a", 0);

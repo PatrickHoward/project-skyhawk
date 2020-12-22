@@ -59,7 +59,7 @@ impl Input {
     }
 
     pub fn get_mousepos_offset(&self) -> Vec2f32 {
-        self.mouse.mousepos_offset_since_last_frame()
+        self.mouse.mousepos_offset_since_last_tick()
     }
 
     pub fn set(&mut self, mapping: InputMapping, down: bool) {

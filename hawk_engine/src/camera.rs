@@ -41,6 +41,14 @@ impl Camera {
         }
     }
 
+    pub fn addto_yaw(&mut self, v: f32) {
+        self.yaw += v;
+    }
+
+    pub fn addto_pitch(&mut self, v: f32) {
+        self.pitch += v;
+    }
+
     pub fn tick(&mut self, dt: f32, input: &Input) {
         const UP: InputMapping = InputMapping::Keyboard(sdl2::keyboard::Scancode::W as i32);
         const DOWN: InputMapping = InputMapping::Keyboard(sdl2::keyboard::Scancode::S as i32);
