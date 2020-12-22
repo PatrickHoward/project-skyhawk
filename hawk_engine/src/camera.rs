@@ -7,6 +7,7 @@ pub struct Camera {
     pitch: f32,
     yaw: f32,
     speed: f32,
+    fov: f32,
 
     direction: Vec3f32,
     position: Vec3f32,
@@ -38,15 +39,18 @@ impl Camera {
             pitch,
             yaw,
             speed,
+            fov: 45.0f32,
         }
     }
 
     pub fn addto_yaw(&mut self, v: f32) {
         self.yaw += v;
     }
-
     pub fn addto_pitch(&mut self, v: f32) {
         self.pitch += v;
+    }
+    pub fn addto_fov(&mut self, v: f32) {
+        self.fov -= v;
     }
 
     pub fn tick(&mut self, dt: f32, input: &Input) {
@@ -60,6 +64,12 @@ impl Camera {
         }
         if self.pitch < -89.0 {
             self.pitch = -89.0;
+        }
+
+        if self.fov < 1.0f32 {
+            self.fov = 1.0f32;
+        } else if self.fov > 45.0f32 {
+            self.fov = 45.0f32;
         }
 
         self.direction = Vec3f32::new(
@@ -103,5 +113,9 @@ impl Camera {
 
     pub fn get_viewmatrix(&self) -> Mat4f32 {
         Mat4f32::look_at(self.position, self.position + self.front, self.up)
+    }
+
+    pub fn get_perspectivematrix(&self) -> Mat4f32 {
+        Mat4f32::perspective(self.fov, 1024.0f32 / 768.0f32, 0.1f32, 100.0f32)
     }
 }

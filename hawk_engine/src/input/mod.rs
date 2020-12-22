@@ -12,6 +12,7 @@ pub enum InputMapping {
     Keyboard(i32),
     Mouse(MouseButton),
     MousePos(i32, i32), // TODO: I shouldn't live here. A separate "axis" enum should exist instead.
+    MouseScroll(i32),
 }
 
 pub struct Input {
@@ -62,12 +63,19 @@ impl Input {
         self.mouse.mousepos_offset_since_last_tick()
     }
 
+    pub fn get_mouse_scroll_delta(&self) -> f32 {
+        self.mouse.scroll_y_delta()
+    }
+
     pub fn set(&mut self, mapping: InputMapping, down: bool) {
         match mapping {
             InputMapping::Keyboard(scancode) => self.keyboard.set(scancode, down),
             InputMapping::Mouse(button) => self.mouse.set(button, down),
             InputMapping::MousePos(x, y) => {
                 self.mouse.set_mousepos(Vec2f32::new(x as f32, y as f32))
+            }
+            InputMapping::MouseScroll(y) => {
+                self.mouse.set_scrollwheel(y as f32);
             }
         }
     }

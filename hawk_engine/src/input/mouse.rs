@@ -36,6 +36,9 @@ pub struct Mouse {
 
     mouse_pos: MousePos,
     old_mouse_pos: MousePos,
+
+    scrolly: f32,
+    old_scrolly: f32,
 }
 
 impl Mouse {
@@ -46,18 +49,25 @@ impl Mouse {
         let mouse_pos = MousePos::new(0.0, 0.0);
         let old_mouse_pos = MousePos::new(1024.0 / 2.0, 768.0 / 2.0); // TODO: I shouldn't be set here!
 
+        let scrolly = 0.0f32;
+        let old_scrolly = 0.0f32;
+
         Mouse {
             mouse_state,
             old_mouse_state,
 
             mouse_pos,
             old_mouse_pos,
+
+            scrolly,
+            old_scrolly,
         }
     }
 
     pub fn tick(&mut self) {
         self.old_mouse_state = self.mouse_state.clone();
-        self.old_mouse_pos = MousePos::new(1024.0 / 2.0, 768.0 / 2.0) //self.mouse_pos.clone();
+        self.old_mouse_pos = MousePos::new(1024.0 / 2.0, 768.0 / 2.0); //self.mouse_pos.clone();
+        self.old_scrolly = self.scrolly;
     }
 
     pub fn set(&mut self, button: MouseButton, down: bool) {
@@ -71,6 +81,9 @@ impl Mouse {
 
     pub fn set_mousepos(&mut self, pos: MousePos) {
         self.mouse_pos = pos;
+    }
+    pub fn set_scrollwheel(&mut self, scroll: f32) {
+        self.scrolly = scroll
     }
 
     pub fn is_pressed(&self, button: MouseButton) -> bool {
@@ -98,7 +111,6 @@ impl Mouse {
     pub fn mousepos(&self) -> MousePos {
         self.mouse_pos
     }
-
     pub fn mousepos_offset_since_last_tick(&self) -> MousePos {
         let offset_x = self.mouse_pos.x - self.old_mouse_pos.x;
         let offset_y = self.mouse_pos.y - self.old_mouse_pos.y;
@@ -106,5 +118,9 @@ impl Mouse {
         // TODO: Move sensitivity out of this function
         const SENSITIVITY: f32 = 0.1;
         MousePos::new(offset_x, offset_y).mul_scalar(SENSITIVITY)
+    }
+
+    pub fn scroll_y_delta(&self) -> f32 {
+        self.scrolly - self.old_scrolly
     }
 }

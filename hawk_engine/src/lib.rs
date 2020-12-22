@@ -92,7 +92,6 @@ pub fn start() {
     let mut view = Mat4f32::identity();
     view.translate(Vec3f32::new(0.0f32, 0.0f32, -3.0f32));
 
-    let projection = Mat4f32::perspective(45.0f32, 1024.0f32 / 768.0f32, 0.1f32, 100.0f32);
     let gl_model = GlMat4f32Handle::new(&shader_program, "model");
     let gl_view = GlMat4f32Handle::new(&shader_program, "view");
     let gl_projection = GlMat4f32Handle::new(&shader_program, "projection");
@@ -132,11 +131,6 @@ pub fn start() {
         clock.throttle(60);
         clock.tick(timer.performance_counter(), timer.performance_frequency());
 
-        // TODO: Create window abstraction so values here are not hard coded.
-        sdl.mouse().warp_mouse_in_window(&window, 1024 / 2, 768 / 2);
-
-        let mouse_offset = input.get_mousepos_offset();
-
         let exit = process_sdl_events(&mut input, &mut ev_pump);
 
         const EXIT_PROGRAM: InputMapping =
@@ -145,8 +139,14 @@ pub fn start() {
             break 'main;
         }
 
+        // TODO: Create window abstraction so values here are not hard coded.
+        sdl.mouse().warp_mouse_in_window(&window, 1024 / 2, 768 / 2);
+        let mouse_offset = input.get_mousepos_offset();
+        let scroll_delta = input.get_mouse_scroll_delta();
+
         camera.addto_yaw(mouse_offset.x);
         camera.addto_pitch(mouse_offset.y);
+        camera.addto_fov(scroll_delta);
         camera.tick(clock.dt() as f32, &input);
 
         render(
@@ -158,7 +158,6 @@ pub fn start() {
             &gl_view,
             &gl_projection,
             &gl_model,
-            &projection,
             &cube_pos,
             &window,
         );
@@ -189,6 +188,9 @@ pub fn process_sdl_events(input: &mut Input, ev_pump: &mut EventPump) -> bool {
             Event::MouseMotion { x, y, .. } => {
                 input.set(InputMapping::MousePos(x, y), false);
             }
+            Event::MouseWheel { x: _x, y, .. } => {
+                input.set(InputMapping::MouseScroll(y), false);
+            }
             _ => {}
         }
     }
@@ -207,7 +209,6 @@ pub fn render(
     gl_view: &GlMat4f32Handle,
     gl_projection: &GlMat4f32Handle,
     gl_model: &GlMat4f32Handle,
-    projection: &Mat4f32,
     cube_pos: &[Vec3f32; 10],
     window: &Window,
 ) {
@@ -235,7 +236,7 @@ pub fn render(
     // ebo.bind();
 
     gl_view.transform(&camera.get_viewmatrix());
-    gl_projection.transform(projection);
+    gl_projection.transform(&camera.get_perspectivematrix());
 
     let mut i = 0;
     for trans in cube_pos.iter() {
