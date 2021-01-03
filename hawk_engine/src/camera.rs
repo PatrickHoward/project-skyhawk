@@ -23,7 +23,7 @@ impl Camera {
 
         let pitch = 0.0;
         let yaw = -90.0;
-        let speed = 2.5;
+        let speed = 5.0;
 
         let direction = Vec3f32::new(
             rotation::to_rad(yaw).cos() * rotation::to_rad(pitch).cos(),

@@ -59,33 +59,3 @@ impl GlTexture {
         }
     }
 }
-
-/// Handle that provides transformations for Mat4f32 (mat4)
-pub struct GlMat4f32Handle {
-    uniform_location: i32,
-}
-
-impl GlMat4f32Handle {
-    pub fn new(shader: &crate::renderer::shader::GLShaderProgram, uniform_name: &str) -> Self {
-        let attr_name = CString::new(uniform_name).unwrap();
-
-        let uniform_location = unsafe { gl::GetUniformLocation(shader.id(), attr_name.as_ptr()) };
-
-        GlMat4f32Handle { uniform_location }
-    }
-
-    pub fn transform(&self, transform_mat: &Mat4f32) {
-        unsafe {
-            gl::UniformMatrix4fv(
-                self.uniform_location,
-                1,
-                gl::FALSE,
-                transform_mat.internal.as_ptr(),
-            )
-        }
-    }
-}
-
-pub struct GlUniformHandle {
-    uniform_location: i32,
-}

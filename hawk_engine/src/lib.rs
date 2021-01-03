@@ -18,7 +18,7 @@ use renderer::{
     color::Color,
     open_gl::*,
     opengl::buffer,
-    shader::GLShaderProgram,
+    shader::{GLShaderProgram, GlShaderUniform},
     vertex::{AsGLVert, GLVert, Vertex},
 };
 
@@ -92,9 +92,9 @@ pub fn start() {
     let mut view = Mat4f32::identity();
     view.translate(Vec3f32::new(0.0f32, 0.0f32, -3.0f32));
 
-    let gl_model = GlMat4f32Handle::new(&shader_program, "model");
-    let gl_view = GlMat4f32Handle::new(&shader_program, "view");
-    let gl_projection = GlMat4f32Handle::new(&shader_program, "projection");
+    let gl_model = GlShaderUniform::new(&shader_program, "model");
+    let gl_view = GlShaderUniform::new(&shader_program, "view");
+    let gl_projection = GlShaderUniform::new(&shader_program, "projection");
 
     let mut input = Input::new();
 
@@ -206,9 +206,9 @@ pub fn render(
     ferris_texture: &GlTexture,
     camera: &Camera,
     vao: &buffer::VertexArray,
-    gl_view: &GlMat4f32Handle,
-    gl_projection: &GlMat4f32Handle,
-    gl_model: &GlMat4f32Handle,
+    gl_view: &GlShaderUniform,
+    gl_projection: &GlShaderUniform,
+    gl_model: &GlShaderUniform,
     cube_pos: &[Vec3f32; 10],
     window: &Window,
 ) {
@@ -219,8 +219,11 @@ pub fn render(
 
     shader_program.use_program();
 
-    shader_program.set_i32("texture_a", 0);
-    shader_program.set_i32("texture_b", 1);
+    let texture_a = GlShaderUniform::new(shader_program, "texture_a");
+    let texture_b = GlShaderUniform::new(shader_program, "texture_b");
+
+    texture_a.set_i32(0);
+    texture_b.set_i32(1);
 
     unsafe {
         gl::ActiveTexture(gl::TEXTURE0);
@@ -235,8 +238,8 @@ pub fn render(
     vao.bind();
     // ebo.bind();
 
-    gl_view.transform(&camera.get_viewmatrix());
-    gl_projection.transform(&camera.get_perspectivematrix());
+    gl_view.set_mat(&camera.get_viewmatrix());
+    gl_projection.set_mat(&camera.get_perspectivematrix());
 
     let mut i = 0;
     for trans in cube_pos.iter() {
@@ -247,7 +250,7 @@ pub fn render(
             Axis::ARBITRARY(Vec3f32::new(1.0f32, 0.3f32, 0.5f32)),
         );
 
-        gl_model.transform(&model);
+        gl_model.set_mat(&model);
 
         unsafe {
             // gl::DrawElements(

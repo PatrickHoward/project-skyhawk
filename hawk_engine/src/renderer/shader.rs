@@ -1,4 +1,6 @@
+use crate::math::matrix::Mat4f32;
 use gl::types::*;
+use nalgebra_glm::Mat4;
 use std::ffi::{CStr, CString};
 
 fn make_whitespace_cstring_with_len(len: usize) -> CString {
@@ -128,27 +130,43 @@ impl GLShaderProgram {
     pub fn id(&self) -> u32 {
         self.id
     }
-
-    pub fn set_i32(&self, attr: &str, value: i32) {
-        let uniform_name = CString::new(attr).unwrap();
-        unsafe {
-            gl::Uniform1i(gl::GetUniformLocation(self.id, uniform_name.as_ptr()), value);
-        }
-    }
-
-    pub fn uniform_loc(&self, attr: &str) -> i32 {
-        let uniform_name = CString::new(attr).unwrap();
-
-        unsafe {
-            gl::GetUniformLocation(self.id, uniform_name.as_ptr())
-        }
-    }
 }
 
 impl Drop for GLShaderProgram {
     fn drop(&mut self) {
         unsafe {
             gl::DeleteProgram(self.id);
+        }
+    }
+}
+
+pub struct GlShaderUniform {
+    shader_id: u32,
+    uniform_location: i32,
+}
+
+impl GlShaderUniform {
+    pub fn new(program: &GLShaderProgram, uniform_name: &str) -> Self {
+        let shader_id = program.id();
+        let uniform_name: std::ffi::CString = std::ffi::CString::new(uniform_name).unwrap();
+        let uniform_location = unsafe { gl::GetUniformLocation(shader_id, uniform_name.as_ptr()) };
+
+        GlShaderUniform {
+            shader_id,
+            uniform_location,
+        }
+    }
+}
+
+// TODO: Make this Typesafe using generics
+impl GlShaderUniform {
+    pub fn set_i32(&self, value: i32) {
+        unsafe { gl::Uniform1i(self.uniform_location, value) };
+    }
+
+    pub fn set_mat(&self, value: &Mat4f32) {
+        unsafe {
+            gl::UniformMatrix4fv(self.uniform_location, 1, gl::FALSE, value.internal.as_ptr())
         }
     }
 }

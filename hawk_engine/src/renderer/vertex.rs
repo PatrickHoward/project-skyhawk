@@ -1,9 +1,10 @@
 use crate::{
-    math::{Vec3f32, Vec2f32},
-    renderer::color::Color
+    math::{Vec2f32, Vec3f32},
+    renderer::color::Color,
 };
 
 use gl;
+
 use std::mem;
 
 /// # Vertex
@@ -17,18 +18,22 @@ pub struct Vertex {
 
 impl Vertex {
     pub fn new(point: Vec3f32, color: Color, texcord: Vec2f32) -> Self {
-        Vertex { point, color, texcord }
+        Vertex {
+            point,
+            color,
+            texcord,
+        }
     }
 
     pub fn pos(&self) -> Vec3f32 {
         self.point
     }
-
     pub fn color(&self) -> Color {
         self.color
     }
-
-    pub fn texcord(&self) -> Vec2f32 { self.texcord }
+    pub fn texcord(&self) -> Vec2f32 {
+        self.texcord
+    }
 }
 
 type X3f32Tuple = (f32, f32, f32);
@@ -51,16 +56,12 @@ impl GLVert {
         let mut location = 0;
         let mut offset = 0;
 
-        unsafe {
-            Self::vertex_attrib_ptr(location, 3, stride, offset)
-        }
+        unsafe { Self::vertex_attrib_ptr(location, 3, stride, offset) }
 
         location = 1;
         offset = offset + mem::size_of::<X3f32Tuple>();
 
-        unsafe {
-            Self::vertex_attrib_ptr(location, 3, stride, offset)
-        }
+        unsafe { Self::vertex_attrib_ptr(location, 3, stride, offset) }
 
         location = 2;
         offset = offset + mem::size_of::<X3f32Tuple>();
@@ -78,7 +79,7 @@ impl GLVert {
             gl::FLOAT,
             gl::FALSE,
             stride as gl::types::GLint,
-            offset as *const gl::types::GLvoid
+            offset as *const gl::types::GLvoid,
         );
     }
 }
