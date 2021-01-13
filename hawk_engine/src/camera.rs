@@ -1,6 +1,6 @@
 use crate::{
     input::*,
-    math::{matrix::Mat4f32, rotation, Vec3f32},
+    math::{matrix::Mat4f32, rotation, Vec3},
 };
 
 pub struct Camera {
@@ -9,23 +9,23 @@ pub struct Camera {
     speed: f32,
     fov: f32,
 
-    direction: Vec3f32,
-    position: Vec3f32,
-    front: Vec3f32,
-    up: Vec3f32,
+    direction: Vec3,
+    position: Vec3,
+    front: Vec3,
+    up: Vec3,
 }
 
 impl Camera {
     pub fn new() -> Self {
-        let position = Vec3f32::new(0.0f32, 0.0f32, 3.0f32);
-        let front = Vec3f32::new(0.0f32, 0.0f32, -1.0f32);
-        let up = Vec3f32::new(0.0f32, 1.0f32, 0.0f32);
+        let position = Vec3::new(0.0f32, 0.0f32, 3.0f32);
+        let front = Vec3::new(0.0f32, 0.0f32, -1.0f32);
+        let up = Vec3::new(0.0f32, 1.0f32, 0.0f32);
 
         let pitch = 0.0;
         let yaw = -90.0;
         let speed = 5.0;
 
-        let direction = Vec3f32::new(
+        let direction = Vec3::new(
             rotation::to_rad(yaw).cos() * rotation::to_rad(pitch).cos(),
             rotation::to_rad(pitch).sin(),
             rotation::to_rad(yaw).sin() * rotation::to_rad(pitch).cos(),
@@ -72,7 +72,7 @@ impl Camera {
             self.fov = 45.0f32;
         }
 
-        self.direction = Vec3f32::new(
+        self.direction = Vec3::new(
             rotation::to_rad(self.yaw).cos() * rotation::to_rad(self.pitch).cos(),
             rotation::to_rad(self.pitch).sin(),
             rotation::to_rad(self.yaw).sin() * rotation::to_rad(self.pitch).cos(),

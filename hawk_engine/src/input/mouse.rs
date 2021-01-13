@@ -1,7 +1,7 @@
 // TODO: Use our own mousebutton and have a way to convert sdl2::mouse::MouseButton to our native type
 use sdl2::mouse::MouseButton;
 
-use crate::math::Vec2f32;
+use crate::math::Vec2;
 
 // pub enum MouseButton {
 //     Left,
@@ -28,7 +28,7 @@ impl MouseState {
     }
 }
 
-type MousePos = Vec2f32;
+type MousePos = Vec2;
 
 pub struct Mouse {
     mouse_state: MouseState,

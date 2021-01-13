@@ -1,3 +1,19 @@
+use std::ffi::CString;
+
+use camera::Camera;
+use clock::Clock;
+use input::{Input, InputMapping};
+use math::{matrix::Mat4f32, rotation::Axis, Vec2, Vec3};
+use renderer::opengl::shader::{GLShaderProgram, GlShaderUniform};
+use renderer::{
+    color::Color,
+    opengl,
+    opengl::{buffer, texture::GlTexture},
+    vertex::{AsGLVert, GLVert, Vertex},
+    window::sdl::*,
+};
+use sdl2::{event::Event, video::Window, EventPump};
+
 pub mod camera;
 pub mod clock;
 pub mod demos;
@@ -6,30 +22,10 @@ pub mod math;
 pub mod mem;
 pub mod renderer;
 
-use input::{Input, InputMapping};
-
-use math::{matrix::Mat4f32, rotation::Axis, Vec2f32, Vec3f32};
-
-use clock::Clock;
-
-use camera::Camera;
-
-use renderer::{
-    color::Color,
-    open_gl::*,
-    opengl::buffer,
-    shader::{GLShaderProgram, GlShaderUniform},
-    vertex::{AsGLVert, GLVert, Vertex},
-};
-
-use std::ffi::CString;
-
-use sdl2::{event::Event, video::Window, EventPump};
-
 pub fn start() {
-    let points: [Vec3f32; 36] = demos::multibox::get_verticies();
+    let points: [Vec3; 36] = demos::multibox::get_verticies();
     let colors: [Color; 36] = [Color::white(); 36];
-    let tex_cords: [Vec2f32; 36] = demos::multibox::get_texture_coordinates();
+    let tex_cords: [Vec2; 36] = demos::multibox::get_texture_coordinates();
     let cube_pos = demos::multibox::get_cube_positions();
 
     let mut verts: Vec<GLVert> = vec![];
@@ -37,60 +33,42 @@ pub fn start() {
         verts.push(Vertex::new(points[i], colors[i], tex_cords[i]).as_glvert());
     }
 
+    let window_config = WindowContextConfig {
+        size: Vec2::new(1024.0, 768.0),
+        caption: "Hello GL",
+        graphics_library: GraphicsLibrary::OPENGL(3, 2),
+    };
+
     // Initialize SDL and OpenGL
-    let sdl = sdl2::init().expect("Failed to initialize SDL!");
-    let video_subsystem = sdl.video().unwrap();
-    let timer = sdl.timer().unwrap();
-
-    let gl_attributes = video_subsystem.gl_attr();
-    gl_attributes.set_context_profile(sdl2::video::GLProfile::Core);
-    gl_attributes.set_context_version(3, 2);
-
-    let window = video_subsystem
-        .window("Hello GL", 1024, 768)
-        // .allow_highdpi()
-        .position_centered()
-        .fullscreen_desktop()
-        .opengl()
-        .build()
-        .unwrap();
-
-    let _gl_context = make_context(&window);
-
-    let _gl =
-        gl::load_with(|s| video_subsystem.gl_get_proc_address(s) as *const std::os::raw::c_void);
-
-    // -----
+    let window = WindowContext::new(window_config);
 
     // Create Textures
     let box_texture = GlTexture::from_path(std::path::Path::new("container.jpg"));
     let ferris_texture = GlTexture::from_path(std::path::Path::new("ferris.png"));
-    // -----
 
     // Create shaders
     let vert_shader =
-        renderer::shader::VertexShader::new(&CString::new(include_str!("triangle.vert")).unwrap())
+        opengl::shader::VertexShader::new(&CString::new(include_str!("triangle.vert")).unwrap())
             .expect("Failed to create vertex shader");
 
-    let frag_shader = renderer::shader::FragmentShader::new(
-        &CString::new(include_str!("triangle.frag")).unwrap(),
-    )
-    .expect("Failed to create fragment shader");
+    let frag_shader =
+        opengl::shader::FragmentShader::new(&CString::new(include_str!("triangle.frag")).unwrap())
+            .expect("Failed to create fragment shader");
 
-    let shader_program = renderer::shader::GLShaderProgram::new(frag_shader, vert_shader)
+    let shader_program = opengl::shader::GLShaderProgram::new(frag_shader, vert_shader)
         .expect("Failed to create Shader program");
     // ----
 
     let clear_color = Color::black().as_tuple();
 
     // Create buffers
-    let ebo = buffer::ElementBuffer::new();
+    // let ebo = buffer::ElementBuffer::new();
     let vbo = buffer::ArrayBuffer::new();
     let vao = buffer::VertexArray::new();
     // ----
 
     let mut view = Mat4f32::identity();
-    view.translate(Vec3f32::new(0.0f32, 0.0f32, -3.0f32));
+    view.translate(Vec3::new(0.0f32, 0.0f32, -3.0f32));
 
     let gl_model = GlShaderUniform::new(&shader_program, "model");
     let gl_view = GlShaderUniform::new(&shader_program, "view");
@@ -120,16 +98,19 @@ pub fn start() {
         gl::ClearColor(clear_color.0, clear_color.1, clear_color.2, clear_color.3);
     }
 
-    let mut clock = Clock::new(timer.performance_counter());
+    let mut clock = Clock::new(window.timer.performance_counter());
     let mut camera = Camera::new();
-    let mut ev_pump = sdl.event_pump().unwrap();
+    let mut ev_pump = window.sdl.event_pump().unwrap();
 
-    sdl.mouse().capture(true);
-    sdl.mouse().show_cursor(false);
+    window.sdl.mouse().capture(true);
+    window.sdl.mouse().show_cursor(false);
 
     'main: loop {
         clock.throttle(60);
-        clock.tick(timer.performance_counter(), timer.performance_frequency());
+        clock.tick(
+            window.timer.performance_counter(),
+            window.timer.performance_frequency(),
+        );
 
         let exit = process_sdl_events(&mut input, &mut ev_pump);
 
@@ -139,8 +120,11 @@ pub fn start() {
             break 'main;
         }
 
-        // TODO: Create window abstraction so values here are not hard coded.
-        sdl.mouse().warp_mouse_in_window(&window, 1024 / 2, 768 / 2);
+        // TODO: Create window abstraction so values here are not hard coded
+        window
+            .sdl
+            .mouse()
+            .warp_mouse_in_window(&window.window, 1024 / 2, 768 / 2);
         let mouse_offset = input.get_mousepos_offset();
         let scroll_delta = input.get_mouse_scroll_delta();
 
@@ -159,7 +143,7 @@ pub fn start() {
             &gl_projection,
             &gl_model,
             &cube_pos,
-            &window,
+            &window.window,
         );
 
         input.tick();
@@ -209,7 +193,7 @@ pub fn render(
     gl_view: &GlShaderUniform,
     gl_projection: &GlShaderUniform,
     gl_model: &GlShaderUniform,
-    cube_pos: &[Vec3f32; 10],
+    cube_pos: &[Vec3; 10],
     window: &Window,
 ) {
     unsafe {
@@ -247,7 +231,7 @@ pub fn render(
         model.translate(*trans);
         model.rotate(
             20.0f32 * i as f32,
-            Axis::ARBITRARY(Vec3f32::new(1.0f32, 0.3f32, 0.5f32)),
+            Axis::ARBITRARY(Vec3::new(1.0f32, 0.3f32, 0.5f32)),
         );
 
         gl_model.set_mat(&model);

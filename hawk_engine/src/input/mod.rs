@@ -3,7 +3,7 @@ mod mouse;
 
 use crate::{
     input::{keyboard::Keyboard, mouse::Mouse},
-    math::Vec2f32,
+    math::Vec2,
 };
 
 use sdl2::mouse::MouseButton;
@@ -55,11 +55,11 @@ impl Input {
         }
     }
 
-    pub fn get_mousepos(&self) -> Vec2f32 {
+    pub fn get_mousepos(&self) -> Vec2 {
         self.mouse.mousepos()
     }
 
-    pub fn get_mousepos_offset(&self) -> Vec2f32 {
+    pub fn get_mousepos_offset(&self) -> Vec2 {
         self.mouse.mousepos_offset_since_last_tick()
     }
 
@@ -71,9 +71,7 @@ impl Input {
         match mapping {
             InputMapping::Keyboard(scancode) => self.keyboard.set(scancode, down),
             InputMapping::Mouse(button) => self.mouse.set(button, down),
-            InputMapping::MousePos(x, y) => {
-                self.mouse.set_mousepos(Vec2f32::new(x as f32, y as f32))
-            }
+            InputMapping::MousePos(x, y) => self.mouse.set_mousepos(Vec2::new(x as f32, y as f32)),
             InputMapping::MouseScroll(y) => {
                 self.mouse.set_scrollwheel(y as f32);
             }

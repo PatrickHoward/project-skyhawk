@@ -1,21 +1,21 @@
-pub mod primitive;
-pub mod vector;
 pub mod matrix;
+pub mod primitive;
 pub mod rotation;
+pub mod vector;
 
-use primitive::{Rect2D};
+use primitive::Rect2D;
 
-use vector::{Vec2, Vec3, Vec4};
+use vector::{Vec2T, Vec3T, Vec4T};
 
 // Aliased types for Vector structs
-pub type Vec2f32 = Vec2<f32>;
-pub type Vec2i32 = Vec2<i32>;
+pub type Vec2 = Vec2T<f32>;
+pub type Vec2i32 = Vec2T<i32>;
 
-pub type Vec3f32 = Vec3<f32>;
-pub type Vec3i32 = Vec3<i32>;
+pub type Vec3 = Vec3T<f32>;
+pub type Vec3i32 = Vec3T<i32>;
 
-pub type Vec4f32 = Vec4<f32>;
-pub type Vec4i32 = Vec4<i32>;
+pub type Vec4 = Vec4T<f32>;
+pub type Vec4i32 = Vec4T<i32>;
 
 // Aliased types for Matrix structs
 // pub type Mat4f32 = Mat4f32;

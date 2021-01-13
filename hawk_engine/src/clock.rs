@@ -17,7 +17,7 @@ impl Clock {
     }
 
     pub fn throttle(&self, target_fps: i32) {
-
+        target_fps;
     }
 
     pub fn dt(&self) -> f64 {

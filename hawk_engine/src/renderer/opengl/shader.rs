@@ -1,6 +1,5 @@
 use crate::math::matrix::Mat4f32;
 use gl::types::*;
-use nalgebra_glm::Mat4;
 use std::ffi::{CStr, CString};
 
 fn make_whitespace_cstring_with_len(len: usize) -> CString {

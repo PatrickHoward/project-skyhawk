@@ -1,7 +1,9 @@
-extern crate nalgebra_glm as glm; // Todo: Probably shouldn't live here anymore now that multiple modules rely on this
+// Todo: Probably shouldn't live here anymore now that multiple modules rely on this
+extern crate nalgebra_glm as glm;
 
 use self::glm::Mat4;
-use crate::math::{rotation, rotation::Axis, Vec3f32, Vec4f32};
+
+use crate::math::{rotation, rotation::Axis, Vec3, Vec4};
 
 // TODO: Make Mat4f32 a generic type eventually
 ///Wrapped type to interact with nalgebra_glm and hawk_engine's Vec classes
@@ -11,7 +13,7 @@ pub struct Mat4f32 {
 }
 
 impl Mat4f32 {
-    pub fn new(a: &[Vec4f32; 4]) -> Self {
+    pub fn new(a: &[Vec4; 4]) -> Self {
         let internal = glm::mat4(
             a[0].x, a[0].y, a[0].z, a[0].w, a[1].x, a[1].y, a[1].z, a[1].w, a[2].x, a[2].y, a[2].z,
             a[2].w, a[3].x, a[3].y, a[3].z, a[3].w,
@@ -81,7 +83,7 @@ impl Mat4f32 {
         Mat4f32 { internal }
     }
 
-    pub fn look_at(pos: Vec3f32, tar: Vec3f32, up: Vec3f32) -> Self {
+    pub fn look_at(pos: Vec3, tar: Vec3, up: Vec3) -> Self {
         let internal: Mat4 = glm::look_at(
             &glm::vec3(pos.x, pos.y, pos.z),
             &glm::vec3(tar.x, tar.y, tar.z),
@@ -91,7 +93,7 @@ impl Mat4f32 {
         Mat4f32 { internal }
     }
 
-    pub fn translate(&mut self, trans_vec: Vec3f32) {
+    pub fn translate(&mut self, trans_vec: Vec3) {
         let translation = glm::vec3::<f32>(trans_vec.x, trans_vec.y, trans_vec.z);
         self.internal = glm::translate::<f32>(&self.internal, &translation);
     }
@@ -113,7 +115,7 @@ impl Mat4f32 {
         self.internal = glm::rotate(&self.internal, rad, &unit_vec);
     }
 
-    pub fn scale(&mut self, scale_vec: Vec3f32) {
+    pub fn scale(&mut self, scale_vec: Vec3) {
         let translation = glm::vec3::<f32>(scale_vec.x, scale_vec.y, scale_vec.z);
         self.internal = glm::scale(&self.internal, &translation);
     }

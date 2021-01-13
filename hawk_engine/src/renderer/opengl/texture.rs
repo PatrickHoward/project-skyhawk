@@ -1,19 +1,4 @@
-extern crate sdl2;
-
-use sdl2::video::{gl_attr::GLAttr, GLContext, Window};
-
-use crate::{math::matrix::Mat4f32, renderer::graphics::ImageRGB};
-
-use std::ffi::CString;
-
-pub fn set_attr(attr: GLAttr) {
-    attr.set_context_profile(sdl2::video::GLProfile::Core);
-    attr.set_context_version(4, 5);
-}
-
-pub fn make_context(window: &Window) -> GLContext {
-    window.gl_create_context().unwrap()
-}
+use crate::renderer::graphics::ImageRGB;
 
 pub struct GlTexture {
     texture: gl::types::GLuint,

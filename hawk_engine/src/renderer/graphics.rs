@@ -1,4 +1,4 @@
-use crate::math::Vec2f32;
+use crate::math::Vec2;
 
 use image::imageops::flip_vertical;
 
@@ -26,8 +26,8 @@ impl ImageRGB {
         }
     }
 
-    pub fn dimensions(&self) -> Vec2f32 {
-        Vec2f32::new(self.width as f32, self.height as f32)
+    pub fn dimensions(&self) -> Vec2 {
+        Vec2::new(self.width as f32, self.height as f32)
     }
 
     pub fn width(&self) -> u32 {

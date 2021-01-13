@@ -1,5 +1,5 @@
 use crate::{
-    math::{Vec2f32, Vec3f32},
+    math::{Vec2, Vec3},
     renderer::color::Color,
 };
 
@@ -11,13 +11,13 @@ use std::mem;
 /// Higher level concept of a vertex, should be converted into the appropriate data type
 /// upon rendering.
 pub struct Vertex {
-    point: Vec3f32,
+    point: Vec3,
     color: Color,
-    texcord: Vec2f32,
+    texcord: Vec2,
 }
 
 impl Vertex {
-    pub fn new(point: Vec3f32, color: Color, texcord: Vec2f32) -> Self {
+    pub fn new(point: Vec3, color: Color, texcord: Vec2) -> Self {
         Vertex {
             point,
             color,
@@ -25,13 +25,13 @@ impl Vertex {
         }
     }
 
-    pub fn pos(&self) -> Vec3f32 {
+    pub fn pos(&self) -> Vec3 {
         self.point
     }
     pub fn color(&self) -> Color {
         self.color
     }
-    pub fn texcord(&self) -> Vec2f32 {
+    pub fn texcord(&self) -> Vec2 {
         self.texcord
     }
 }

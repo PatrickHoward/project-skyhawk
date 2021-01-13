@@ -1,6 +1,6 @@
 extern crate nalgebra_glm as glm;
 
-use crate::math::Vec3f32;
+use crate::math::Vec3;
 
 pub enum Axis {
     X,
@@ -10,7 +10,7 @@ pub enum Axis {
     XZ,
     YZ,
     XYZ,
-    ARBITRARY(Vec3f32),
+    ARBITRARY(Vec3),
 }
 
 pub fn to_rad(deg: f32) -> f32 {

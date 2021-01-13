@@ -1,14 +1,14 @@
-use crate::math::Vec3f32;
+use crate::math::Vec3;
 
 #[derive(Copy, Clone, Debug)]
 pub struct Color {
-    internal: Vec3f32,
+    internal: Vec3,
     a: u8,
 }
 
 impl Color {
     pub fn new(r: u8, g: u8, b: u8, a: u8) -> Self {
-        let internal = Vec3f32::new((r / 255) as f32, (g / 255) as f32, (b / 255) as f32);
+        let internal = Vec3::new((r / 255) as f32, (g / 255) as f32, (b / 255) as f32);
 
         Color { internal, a }
     }
@@ -23,7 +23,7 @@ impl Color {
     }
 
     pub fn new_opaque(r: u8, g: u8, b: u8) -> Self {
-        let internal = Vec3f32::new((r / 255) as f32, (g / 255) as f32, (b / 255) as f32);
+        let internal = Vec3::new((r / 255) as f32, (g / 255) as f32, (b / 255) as f32);
 
         Color { internal, a: 255 }
     }
@@ -32,7 +32,7 @@ impl Color {
         (self.internal.x, self.internal.y, self.internal.z)
     }
 
-    pub fn color(&self) -> Vec3f32 {
+    pub fn color(&self) -> Vec3 {
         self.internal
     }
 }
