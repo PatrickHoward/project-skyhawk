@@ -48,6 +48,7 @@ pub struct GLVert {
     point: X3f32Tuple,
     color: X3f32Tuple,
     texcord: X2f32Tuple,
+    normal: X3f32Tuple,
 }
 
 impl GLVert {
@@ -68,6 +69,14 @@ impl GLVert {
 
         unsafe {
             Self::vertex_attrib_ptr(location, 2, stride, offset);
+        }
+
+        location = 3;
+
+        offset = offset + mem::size_of::<X3f32Tuple>();
+
+        unsafe {
+            Self::vertex_attrib_ptr(location, 3, stride, offset);
         }
     }
 
@@ -94,6 +103,7 @@ impl AsGLVert for Vertex {
             point: self.point.into_tuple(),
             color: self.color.color().into_tuple(),
             texcord: self.texcord.into_tuple(),
+            normal: Vec3::zero().into_tuple(),
         }
     }
 }

@@ -2,6 +2,7 @@
 
 in VS_OUTPUT {
     vec3 Color;
+    vec3 Normal;
     vec2 TexCord;
 } IN;
 
