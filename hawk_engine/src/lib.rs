@@ -1,19 +1,3 @@
-use std::ffi::CString;
-
-use camera::Camera;
-use clock::Clock;
-use input::{Input, InputMapping};
-use math::{matrix::Mat4f32, rotation::Axis, Vec2, Vec3};
-use renderer::opengl::shader::{GLShaderProgram, GlShaderUniform};
-use renderer::{
-    color::Color,
-    opengl,
-    opengl::{buffer, texture::GlTexture},
-    vertex::{AsGLVert, GLVert, Vertex},
-    window::sdl::*,
-};
-use sdl2::{event::Event, video::Window, EventPump};
-
 pub mod camera;
 pub mod clock;
 pub mod demos;
@@ -22,11 +6,30 @@ pub mod math;
 pub mod mem;
 pub mod renderer;
 
+use std::ffi::CString;
+
+use camera::Camera;
+use clock::Clock;
+use input::{Input, InputMapping};
+use math::{matrix::Mat4f32, rotation::Axis, Vec2, Vec3};
+use renderer::{
+    color::Color,
+    opengl::{
+        self, buffer,
+        shader::{GLShaderProgram, GlShaderUniform},
+        texture::GlTexture,
+    },
+    vertex::{AsGLVert, GLVert, Vertex},
+    window::sdl::*,
+};
+
+use sdl2::{event::Event, video::Window, EventPump};
+
 pub fn start() {
-    let points: [Vec3; 36] = demos::multibox::get_verticies();
-    let colors: [Color; 36] = [Color::white(); 36];
-    let tex_cords: [Vec2; 36] = demos::multibox::get_texture_coordinates();
-    let cube_pos = demos::multibox::get_cube_positions();
+    let points = demos::multibox::get_verticies();
+    let colors = [Color::white(); 36];
+    let tex_cords = demos::multibox::get_texture_coordinates();
+    // let indices = demos::singlebox::get_indicies();
 
     let mut verts: Vec<GLVert> = vec![];
     for i in 0..points.len() {
@@ -62,7 +65,7 @@ pub fn start() {
     let clear_color = Color::black().as_tuple();
 
     // Create buffers
-    // let ebo = buffer::ElementBuffer::new();
+    let ebo = buffer::ElementBuffer::new();
     let vbo = buffer::ArrayBuffer::new();
     let vao = buffer::VertexArray::new();
     // ----
@@ -139,10 +142,10 @@ pub fn start() {
             &ferris_texture,
             &camera,
             &vao,
+            &ebo,
             &gl_view,
             &gl_projection,
             &gl_model,
-            &cube_pos,
             &window.window,
         );
 
@@ -190,10 +193,10 @@ pub fn render(
     ferris_texture: &GlTexture,
     camera: &Camera,
     vao: &buffer::VertexArray,
+    ebo: &buffer::ElementBuffer,
     gl_view: &GlShaderUniform,
     gl_projection: &GlShaderUniform,
     gl_model: &GlShaderUniform,
-    cube_pos: &[Vec3; 10],
     window: &Window,
 ) {
     unsafe {
@@ -225,28 +228,18 @@ pub fn render(
     gl_view.set_mat(&camera.get_viewmatrix());
     gl_projection.set_mat(&camera.get_perspectivematrix());
 
-    let mut i = 0;
-    for trans in cube_pos.iter() {
-        let mut model = Mat4f32::identity();
-        model.translate(*trans);
-        model.rotate(
-            20.0f32 * i as f32,
-            Axis::ARBITRARY(Vec3::new(1.0f32, 0.3f32, 0.5f32)),
-        );
+    let mut model = Mat4f32::identity();
 
-        gl_model.set_mat(&model);
+    gl_model.set_mat(&model);
 
-        unsafe {
-            // gl::DrawElements(
-            //     gl::TRIANGLES,
-            //     6,
-            //     gl::UNSIGNED_INT,
-            //     0 as *const gl::types::GLvoid,
-            // );
-            gl::DrawArrays(gl::TRIANGLES, 0, 36);
-        }
-
-        i += 1;
+    unsafe {
+        // gl::DrawElements(
+        //     gl::TRIANGLES,
+        //     6,
+        //     gl::UNSIGNED_INT,
+        //     0 as *const gl::types::GLvoid,
+        // );
+        gl::DrawArrays(gl::TRIANGLES, 0, 36);
     }
 
     window.gl_swap_window();
