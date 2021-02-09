@@ -1,6 +1,7 @@
 use sdl2::video::{gl_attr::GLAttr, GLContext, Window};
 
 pub mod buffer;
+pub mod mesh;
 pub mod shader;
 pub mod texture;
 
