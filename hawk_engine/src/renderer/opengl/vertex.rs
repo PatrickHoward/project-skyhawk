@@ -8,14 +8,14 @@ use std::mem;
 /// renderer::vertex::Vertex converted to a GlVert when piping data to OpenGL.
 #[derive(Copy, Clone, Debug)]
 #[repr(C, packed)]
-pub struct GLVert {
+pub struct GlVert {
     point: X3f32Tuple,
     color: X3f32Tuple,
     texcord: X2f32Tuple,
     normal: X3f32Tuple,
 }
 
-impl GLVert {
+impl GlVert {
     pub fn vertex_attr_pointer() {
         let stride = mem::size_of::<Self>();
         let mut location = 0;
@@ -58,12 +58,12 @@ impl GLVert {
 }
 
 pub trait AsGLVert {
-    fn as_glvert(&self) -> GLVert;
+    fn as_glvert(&self) -> GlVert;
 }
 
 impl AsGLVert for Vertex {
-    fn as_glvert(&self) -> GLVert {
-        GLVert {
+    fn as_glvert(&self) -> GlVert {
+        GlVert {
             point: self.point.into_tuple(),
             color: self.color.color().into_tuple(),
             texcord: self.texcord.into_tuple(),

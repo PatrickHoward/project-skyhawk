@@ -22,7 +22,7 @@ use renderer::{
         self, buffer,
         shader::{GLShaderProgram, GlShaderUniform},
         texture::GlTexture,
-        vertex::{AsGLVert, GLVert},
+        vertex::{AsGLVert, GlVert},
     },
     vertex::Vertex,
     window::sdl::*,
@@ -36,7 +36,7 @@ pub fn start() {
     let tex_cords = demos::multibox::get_texture_coordinates();
     // let indices = demos::multibox::get_indicies();
 
-    let mut verts: Vec<GLVert> = vec![];
+    let mut verts: Vec<GlVert> = vec![];
     for i in 0..points.len() {
         verts.push(Vertex::new(points[i], colors[i], tex_cords[i]).as_glvert());
     }
@@ -95,7 +95,7 @@ pub fn start() {
 
     vbo.bind();
 
-    GLVert::vertex_attr_pointer();
+    GlVert::vertex_attr_pointer();
 
     vbo.unbind();
     vao.unbind();
