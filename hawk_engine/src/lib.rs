@@ -29,7 +29,7 @@ pub fn start() {
     let points = demos::multibox::get_verticies();
     let colors = [Color::white(); 36];
     let tex_cords = demos::multibox::get_texture_coordinates();
-    let indices = demos::multibox::get_indicies();
+    // let indices = demos::multibox::get_indicies();
 
     let mut verts: Vec<GLVert> = vec![];
     for i in 0..points.len() {
@@ -65,7 +65,7 @@ pub fn start() {
     let clear_color = Color::black().as_tuple();
 
     // Create buffers
-    let ebo = buffer::ElementBuffer::new();
+    // let ebo = buffer::ElementBuffer::new();
     let vbo = buffer::ArrayBuffer::new();
     let vao = buffer::VertexArray::new();
     // ----
@@ -85,8 +85,8 @@ pub fn start() {
     vbo.buffer_data(&verts);
     vbo.unbind();
 
-    ebo.bind();
-    ebo.buffer_data(&indices);
+    // ebo.bind();
+    // ebo.buffer_data(&indices);
 
     vbo.bind();
 
@@ -154,7 +154,7 @@ pub fn start() {
             &ferris_texture,
             &camera,
             &vao,
-            &ebo,
+            // &ebo,
             &gl_view,
             &gl_projection,
             &gl_model,
@@ -205,7 +205,7 @@ pub fn render(
     ferris_texture: &GlTexture,
     camera: &Camera,
     vao: &buffer::VertexArray,
-    ebo: &buffer::ElementBuffer,
+    // ebo: &buffer::ElementBuffer,
     gl_view: &GlShaderUniform,
     gl_projection: &GlShaderUniform,
     gl_model: &GlShaderUniform,
@@ -245,13 +245,13 @@ pub fn render(
     gl_model.set_mat(&model);
 
     unsafe {
-        gl::DrawElements(
-            gl::TRIANGLES,
-            6,
-            gl::UNSIGNED_INT,
-            0 as *const gl::types::GLvoid,
-        );
-        // gl::DrawArrays(gl::TRIANGLES, 0, 36);
+        // gl::DrawElements(
+        //     gl::TRIANGLES,
+        //     6,
+        //     gl::UNSIGNED_INT,
+        //     0 as *const gl::types::GLvoid,
+        // );
+        gl::DrawArrays(gl::TRIANGLES, 0, 36);
     }
 
     window.gl_swap_window();
