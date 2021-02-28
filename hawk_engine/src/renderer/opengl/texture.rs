@@ -1,11 +1,19 @@
+use crate::mem::sid::AsStrId;
 use crate::renderer::graphics::ImageRGB;
 
 pub struct GlTexture {
+    name: crate::mem::StrId,
     texture: gl::types::GLuint,
 }
 
 impl GlTexture {
-    pub fn new(graphic: ImageRGB) -> Self {
+    pub fn new(graphic: ImageRGB, texture_name: Option<&str>) -> Self {
+        let name = match texture_name {
+            Some(s) => s,
+            None => "<default>",
+        }
+        .as_str_id();
+
         let mut texture: u32 = 0;
         unsafe {
             gl::GenTextures(1, &mut texture);
@@ -30,12 +38,12 @@ impl GlTexture {
             gl::GenerateMipmap(gl::TEXTURE_2D);
         }
 
-        GlTexture { texture }
+        GlTexture { texture, name }
     }
 
     pub fn from_path(img_path: &std::path::Path) -> Self {
         let graphic = crate::renderer::graphics::ImageRGB::new(&img_path);
-        Self::new(graphic)
+        Self::new(graphic, None) // TODO: Replace "None" with actual texture name
     }
 
     pub fn bind(&self) {
