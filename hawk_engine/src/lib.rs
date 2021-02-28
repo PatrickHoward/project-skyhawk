@@ -9,17 +9,22 @@ pub mod renderer;
 use std::ffi::CString;
 
 use camera::Camera;
+
 use clock::Clock;
+
 use input::{Input, InputMapping};
-use math::{matrix::Mat4f32, rotation::Axis, Vec2, Vec3};
+
+use math::{matrix::Mat4f32, Vec2, Vec3};
+
 use renderer::{
     color::Color,
     opengl::{
         self, buffer,
         shader::{GLShaderProgram, GlShaderUniform},
         texture::GlTexture,
+        vertex::{AsGLVert, GLVert},
     },
-    vertex::{AsGLVert, GLVert, Vertex},
+    vertex::Vertex,
     window::sdl::*,
 };
 
@@ -108,10 +113,8 @@ pub fn start() {
     window.sdl.mouse().capture(true);
     window.sdl.mouse().show_cursor(false);
 
-    let mut counter = 0;
-
     'main: loop {
-        clock.throttle(60);
+        // clock.throttle(60);
         clock.tick(
             window.timer.performance_counter(),
             window.timer.performance_frequency(),
@@ -240,7 +243,7 @@ pub fn render(
     gl_view.set_mat(&camera.get_viewmatrix());
     gl_projection.set_mat(&camera.get_perspectivematrix());
 
-    let mut model = Mat4f32::identity();
+    let model = Mat4f32::identity();
 
     gl_model.set_mat(&model);
 

@@ -16,9 +16,9 @@ impl Clock {
         self.last_tick = tick;
     }
 
-    pub fn throttle(&self, target_fps: i32) {
-        target_fps;
-    }
+    // pub fn throttle(&self, target_fps: i32) {
+    //     target_fps;
+    // }
 
     pub fn dt(&self) -> f64 {
         self.dt
