@@ -4,7 +4,6 @@ use crate::{
 };
 
 use gl;
-
 use std::mem;
 
 /// # Vertex

@@ -1,7 +1,12 @@
-use std::ffi::CString;
+pub mod camera;
+pub mod demos;
+pub mod input;
+pub mod math;
+pub mod mem;
+pub mod renderer;
+pub mod time;
 
 use camera::Camera;
-use clock::Clock;
 use input::{Input, InputMapping};
 use math::{matrix::Mat4f32, rotation::Axis, Vec2, Vec3};
 use renderer::opengl::shader::{GLShaderProgram, GlShaderUniform};
@@ -13,16 +18,10 @@ use renderer::{
     window::sdl::*,
 };
 use sdl2::{event::Event, video::Window, EventPump};
+use std::ffi::CString;
+use time::clock::Clock;
 
-pub mod camera;
-pub mod clock;
-pub mod demos;
-pub mod input;
-pub mod math;
-pub mod mem;
-pub mod renderer;
-
-pub fn start() {
+pub fn start(window_config: WindowContextConfig) {
     let points: [Vec3; 36] = demos::multibox::get_verticies();
     let colors: [Color; 36] = [Color::white(); 36];
     let tex_cords: [Vec2; 36] = demos::multibox::get_texture_coordinates();
@@ -32,12 +31,6 @@ pub fn start() {
     for i in 0..points.len() {
         verts.push(Vertex::new(points[i], colors[i], tex_cords[i]).as_glvert());
     }
-
-    let window_config = WindowContextConfig {
-        size: Vec2::new(1024.0, 768.0),
-        caption: "Hello GL",
-        graphics_library: GraphicsLibrary::OPENGL(3, 2),
-    };
 
     // Initialize SDL and OpenGL
     let window = WindowContext::new(window_config);
@@ -121,10 +114,11 @@ pub fn start() {
         }
 
         // TODO: Create window abstraction so values here are not hard coded
-        window
-            .sdl
-            .mouse()
-            .warp_mouse_in_window(&window.window, 1024 / 2, 768 / 2);
+        window.sdl.mouse().warp_mouse_in_window(
+            &window.window,
+            (window.size.x / 2.0f32) as i32,
+            (window.size.y / 2.0f32) as i32,
+        );
         let mouse_offset = input.get_mousepos_offset();
         let scroll_delta = input.get_mouse_scroll_delta();
 
@@ -142,8 +136,7 @@ pub fn start() {
             &gl_view,
             &gl_projection,
             &gl_model,
-            &cube_pos,
-            &window.window,
+            &window,
         );
 
         input.tick();
@@ -193,8 +186,7 @@ pub fn render(
     gl_view: &GlShaderUniform,
     gl_projection: &GlShaderUniform,
     gl_model: &GlShaderUniform,
-    cube_pos: &[Vec3; 10],
-    window: &Window,
+    window_context: &WindowContext,
 ) {
     unsafe {
         gl::Viewport(0, 0, 1680, 1050);
@@ -204,50 +196,27 @@ pub fn render(
     shader_program.use_program();
 
     let texture_a = GlShaderUniform::new(shader_program, "texture_a");
-    let texture_b = GlShaderUniform::new(shader_program, "texture_b");
 
     texture_a.set_i32(0);
-    texture_b.set_i32(1);
 
     unsafe {
         gl::ActiveTexture(gl::TEXTURE0);
     }
-    box_texture.bind();
 
-    unsafe {
-        gl::ActiveTexture(gl::TEXTURE1);
-    }
-    ferris_texture.bind();
+    box_texture.bind();
 
     vao.bind();
     // ebo.bind();
 
     gl_view.set_mat(&camera.get_viewmatrix());
-    gl_projection.set_mat(&camera.get_perspectivematrix());
+    gl_projection.set_mat(&camera.get_perspectivematrix(window_context));
 
-    let mut i = 0;
-    for trans in cube_pos.iter() {
-        let mut model = Mat4f32::identity();
-        model.translate(*trans);
-        model.rotate(
-            20.0f32 * i as f32,
-            Axis::ARBITRARY(Vec3::new(1.0f32, 0.3f32, 0.5f32)),
-        );
+    let mut model = Mat4f32::identity();
+    gl_model.set_mat(&model);
 
-        gl_model.set_mat(&model);
-
-        unsafe {
-            // gl::DrawElements(
-            //     gl::TRIANGLES,
-            //     6,
-            //     gl::UNSIGNED_INT,
-            //     0 as *const gl::types::GLvoid,
-            // );
-            gl::DrawArrays(gl::TRIANGLES, 0, 36);
-        }
-
-        i += 1;
+    unsafe {
+        gl::DrawArrays(gl::TRIANGLES, 0, 36);
     }
 
-    window.gl_swap_window();
+    window_context.window.gl_swap_window();
 }

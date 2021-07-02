@@ -17,6 +17,7 @@ pub struct WindowContextConfig {
 
 pub struct WindowContext {
     pub window: Window,
+    pub size: Vec2,
     pub video: VideoSubsystem,
     pub timer: TimerSubsystem,
     pub sdl: sdl2::Sdl,
@@ -51,6 +52,7 @@ impl WindowContext {
         WindowContext {
             window,
             video,
+            size: config.size,
             _ctx: ctx,
             timer,
             sdl,

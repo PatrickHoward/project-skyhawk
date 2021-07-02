@@ -1,4 +1,4 @@
-use crate::renderer::graphics::ImageRGB;
+use crate::renderer::image::ImageRGB;
 
 pub struct GlTexture {
     texture: gl::types::GLuint,
@@ -34,7 +34,7 @@ impl GlTexture {
     }
 
     pub fn from_path(img_path: &std::path::Path) -> Self {
-        let graphic = crate::renderer::graphics::ImageRGB::new(&img_path);
+        let graphic = crate::renderer::image::ImageRGB::new(&img_path);
         Self::new(graphic)
     }
 

@@ -7,6 +7,25 @@ use crate::{
 };
 
 use sdl2::mouse::MouseButton;
+use std::collections::HashMap;
+
+pub struct InputSystem<'a> {
+    input: Input, // Underlying input system,
+    bindings: HashMap<&'a str, InputMapping>,
+}
+
+impl InputSystem<'_> {
+    pub fn new() -> Self {
+        let input = Input::new();
+        let bindings = HashMap::<&str, InputMapping>::new();
+
+        InputSystem { input, bindings }
+    }
+
+    pub fn Tick(dt: f32) {
+        // Do nothing for now.
+    }
+}
 
 pub enum InputMapping {
     Keyboard(i32),

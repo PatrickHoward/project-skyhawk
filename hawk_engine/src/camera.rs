@@ -1,3 +1,4 @@
+use crate::renderer::window::sdl::WindowContext;
 use crate::{
     input::*,
     math::{matrix::Mat4f32, rotation, Vec3},
@@ -115,7 +116,7 @@ impl Camera {
         Mat4f32::look_at(self.position, self.position + self.front, self.up)
     }
 
-    pub fn get_perspectivematrix(&self) -> Mat4f32 {
-        Mat4f32::perspective(self.fov, 1024.0f32 / 768.0f32, 0.1f32, 100.0f32)
+    pub fn get_perspectivematrix(&self, window: &WindowContext) -> Mat4f32 {
+        Mat4f32::perspective(self.fov, window.size.x / window.size.y, 0.1f32, 100.0f32)
     }
 }

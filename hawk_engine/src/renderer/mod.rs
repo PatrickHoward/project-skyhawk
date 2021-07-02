@@ -1,5 +1,5 @@
 pub mod color;
-pub mod graphics;
+pub mod image;
 pub mod vertex;
 
 pub mod opengl;
